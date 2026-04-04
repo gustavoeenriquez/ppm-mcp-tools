@@ -3,19 +3,36 @@
     <ProjectGuid>{A1000000-0000-0000-0000-000000000001}</ProjectGuid>
   </PropertyGroup>
   <ItemGroup>
-    <!-- Databases (FireDAC) -->
-    <Projects Include="mcp-postgres\mcp-postgres.dproj"/>
-    <Projects Include="mcp-mysql\mcp-mysql.dproj"/>
-    <Projects Include="mcp-mssql\mcp-mssql.dproj"/>
-    <Projects Include="mcp-sqlite\mcp-sqlite.dproj"/>
-    <Projects Include="mcp-oracle\mcp-oracle.dproj"/>
-    <Projects Include="mcp-firebird\mcp-firebird.dproj"/>
-    <Projects Include="mcp-odbc\mcp-odbc.dproj"/>
-    <!-- Email -->
-    <Projects Include="mcp-smtp\mcp-smtp.dproj"/>
-    <Projects Include="mcp-imap\mcp-imap.dproj"/>
-    <!-- Messaging -->
-    <Projects Include="mcp-telegram\mcp-telegram.dproj"/>
+    <Projects Include="mcp-postgres\mcp-postgres.dproj">
+      <Dependencies/>
+    </Projects>
+    <Projects Include="mcp-mysql\mcp-mysql.dproj">
+      <Dependencies/>
+    </Projects>
+    <Projects Include="mcp-mssql\mcp-mssql.dproj">
+      <Dependencies/>
+    </Projects>
+    <Projects Include="mcp-sqlite\mcp-sqlite.dproj">
+      <Dependencies/>
+    </Projects>
+    <Projects Include="mcp-oracle\mcp-oracle.dproj">
+      <Dependencies/>
+    </Projects>
+    <Projects Include="mcp-firebird\mcp-firebird.dproj">
+      <Dependencies/>
+    </Projects>
+    <Projects Include="mcp-odbc\mcp-odbc.dproj">
+      <Dependencies/>
+    </Projects>
+    <Projects Include="mcp-smtp\mcp-smtp.dproj">
+      <Dependencies/>
+    </Projects>
+    <Projects Include="mcp-imap\mcp-imap.dproj">
+      <Dependencies/>
+    </Projects>
+    <Projects Include="mcp-telegram\mcp-telegram.dproj">
+      <Dependencies/>
+    </Projects>
   </ItemGroup>
   <Target Name="Build">
     <MSBuild Projects="@(Projects)" Targets="Build" Properties="Config=Release;Platform=Win64"/>
