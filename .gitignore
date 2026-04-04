@@ -11,8 +11,10 @@
 *.identcache
 *.tvsconfig
 *.deployproj
+*.res
 Win32/
 Win64/
 Linux64/
+__history/
 __history__/
 __recovery__/
