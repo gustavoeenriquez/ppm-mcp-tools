@@ -1,0 +1,30 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{A1000000-0000-0000-0000-000000000001}</ProjectGuid>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Databases (FireDAC) -->
+    <Projects Include="mcp-postgres\mcp-postgres.dproj"/>
+    <Projects Include="mcp-mysql\mcp-mysql.dproj"/>
+    <Projects Include="mcp-mssql\mcp-mssql.dproj"/>
+    <Projects Include="mcp-sqlite\mcp-sqlite.dproj"/>
+    <Projects Include="mcp-oracle\mcp-oracle.dproj"/>
+    <Projects Include="mcp-firebird\mcp-firebird.dproj"/>
+    <Projects Include="mcp-odbc\mcp-odbc.dproj"/>
+    <!-- Email -->
+    <Projects Include="mcp-smtp\mcp-smtp.dproj"/>
+    <Projects Include="mcp-imap\mcp-imap.dproj"/>
+    <!-- Messaging -->
+    <Projects Include="mcp-telegram\mcp-telegram.dproj"/>
+  </ItemGroup>
+  <Target Name="Build">
+    <MSBuild Projects="@(Projects)" Targets="Build" Properties="Config=Release;Platform=Win64"/>
+  </Target>
+  <Target Name="Rebuild">
+    <MSBuild Projects="@(Projects)" Targets="Rebuild" Properties="Config=Release;Platform=Win64"/>
+  </Target>
+  <Target Name="Clean">
+    <MSBuild Projects="@(Projects)" Targets="Clean" Properties="Config=Release;Platform=Win64"/>
+  </Target>
+  <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
