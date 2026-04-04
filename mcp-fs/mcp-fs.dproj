@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{B2C3D4E5-F6A7-8901-BCDE-F12345678901}</ProjectGuid>
+    <MainSource>mcp-fs.dpr</MainSource>
+    <Base>True</Base>
+    <Config Condition="'$(Config)'==''">Release</Config>
+    <Platform Condition="'$(Platform)'==''">Win64</Platform>
+    <TargetedPlatforms>3</TargetedPlatforms>
+    <AppType>Console</AppType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Base)'!=''">
+    <BT_BuildType>Debug</BT_BuildType>
+    <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;$(DCC_Namespace)</DCC_Namespace>
+    <DCC_UnitSearchPath>..\src;..\src\tools\Tier1;..\src\tools\Tier2;..\src\tools\Tier3;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+    <DCC_DcuOutput>.\dcu\$(Platform)\$(Config)</DCC_DcuOutput>
+    <DCC_ExeOutput>.\dist</DCC_ExeOutput>
+    <DCC_DynamicRTL>False</DCC_DynamicRTL>
+    <DCC_ConsoleTarget>True</DCC_ConsoleTarget>
+    <Manifest_File>None</Manifest_File>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Base_Win64)'!='' Or ('$(Base)'!='' And '$(Platform)'=='Win64')">
+    <Base_Win64>true</Base_Win64>
+    <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Base_Linux64)'!='' Or ('$(Base)'!='' And '$(Platform)'=='Linux64')">
+    <Base_Linux64>true</Base_Linux64>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Cfg_2)'!='' Or ('$(Base)'!='' And '$(Config)'=='Release')">
+    <Cfg_2>true</Cfg_2>
+    <DCC_DebugInformation>0</DCC_DebugInformation>
+    <DCC_LocalDebugSymbols>False</DCC_LocalDebugSymbols>
+    <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+    <DCC_Optimize>True</DCC_Optimize>
+  </PropertyGroup>
+  <ItemGroup>
+    <DelphiCompile Include="$(MainSource)">
+      <MainSource>MainSource</MainSource>
+    </DelphiCompile>
+  </ItemGroup>
+  <Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')" />
+  <Import Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj" Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" />
+</Project>

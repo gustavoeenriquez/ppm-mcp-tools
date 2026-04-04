@@ -33,6 +33,18 @@
         <Projects Include="mcp-telegram\mcp-telegram.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="mcp-file-reader\mcp-filereader.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-fs\mcp-fs.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-ini\mcp-ini.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-shell\mcp-shell.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -131,14 +143,50 @@
     <Target Name="mcp-telegram:Make">
         <MSBuild Projects="mcp-telegram\mcp-telegram.dproj" Targets="Make"/>
     </Target>
+    <Target Name="mcp-file-reader">
+        <MSBuild Projects="mcp-file-reader\mcp-filereader.dproj"/>
+    </Target>
+    <Target Name="mcp-file-reader:Clean">
+        <MSBuild Projects="mcp-file-reader\mcp-filereader.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-file-reader:Make">
+        <MSBuild Projects="mcp-file-reader\mcp-filereader.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-fs">
+        <MSBuild Projects="mcp-fs\mcp-fs.dproj"/>
+    </Target>
+    <Target Name="mcp-fs:Clean">
+        <MSBuild Projects="mcp-fs\mcp-fs.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-fs:Make">
+        <MSBuild Projects="mcp-fs\mcp-fs.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-ini">
+        <MSBuild Projects="mcp-ini\mcp-ini.dproj"/>
+    </Target>
+    <Target Name="mcp-ini:Clean">
+        <MSBuild Projects="mcp-ini\mcp-ini.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-ini:Make">
+        <MSBuild Projects="mcp-ini\mcp-ini.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-shell">
+        <MSBuild Projects="mcp-shell\mcp-shell.dproj"/>
+    </Target>
+    <Target Name="mcp-shell:Clean">
+        <MSBuild Projects="mcp-shell\mcp-shell.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-shell:Make">
+        <MSBuild Projects="mcp-shell\mcp-shell.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="mcp-postgres;mcp-mysql;mcp-mssql;mcp-sqlite;mcp-oracle;mcp-firebird;mcp-odbc;mcp-smtp;mcp-imap;mcp-telegram"/>
+        <CallTarget Targets="mcp-postgres;mcp-mysql;mcp-mssql;mcp-sqlite;mcp-oracle;mcp-firebird;mcp-odbc;mcp-smtp;mcp-imap;mcp-telegram;mcp-file-reader;mcp-fs;mcp-ini;mcp-shell"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="mcp-postgres:Clean;mcp-mysql:Clean;mcp-mssql:Clean;mcp-sqlite:Clean;mcp-oracle:Clean;mcp-firebird:Clean;mcp-odbc:Clean;mcp-smtp:Clean;mcp-imap:Clean;mcp-telegram:Clean"/>
+        <CallTarget Targets="mcp-postgres:Clean;mcp-mysql:Clean;mcp-mssql:Clean;mcp-sqlite:Clean;mcp-oracle:Clean;mcp-firebird:Clean;mcp-odbc:Clean;mcp-smtp:Clean;mcp-imap:Clean;mcp-telegram:Clean;mcp-file-reader:Clean;mcp-fs:Clean;mcp-ini:Clean;mcp-shell:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="mcp-postgres:Make;mcp-mysql:Make;mcp-mssql:Make;mcp-sqlite:Make;mcp-oracle:Make;mcp-firebird:Make;mcp-odbc:Make;mcp-smtp:Make;mcp-imap:Make;mcp-telegram:Make"/>
+        <CallTarget Targets="mcp-postgres:Make;mcp-mysql:Make;mcp-mssql:Make;mcp-sqlite:Make;mcp-oracle:Make;mcp-firebird:Make;mcp-odbc:Make;mcp-smtp:Make;mcp-imap:Make;mcp-telegram:Make;mcp-file-reader:Make;mcp-fs:Make;mcp-ini:Make;mcp-shell:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
