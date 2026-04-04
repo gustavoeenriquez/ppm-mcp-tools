@@ -8,6 +8,7 @@ uses
   UMakerAi.MCPServer.Stdio,
   UMakerAi.MCPServer.Http,
   UMakerAi.MCPServer.SSE,
+  MCPTool.FDBase in '..\\_shared\\MCPTool.FDBase.pas',
   MCPTool.MySQL in 'MCPTool.MySQL.pas';
 
 var
