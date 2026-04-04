@@ -8,7 +8,7 @@ uses
   UMakerAi.MCPServer.Stdio,
   UMakerAi.MCPServer.Http,
   UMakerAi.MCPServer.SSE,
-  MCPTool.ODBC in '..\src\tools\Tier3\MCPTool.ODBC.pas';
+  MCPTool.ODBC in 'MCPTool.ODBC.pas';
 
 var
   MCPServer: TAiMCPServer;

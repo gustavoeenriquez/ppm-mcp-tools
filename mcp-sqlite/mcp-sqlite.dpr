@@ -8,7 +8,7 @@ uses
   UMakerAi.MCPServer.Stdio,
   UMakerAi.MCPServer.Http,
   UMakerAi.MCPServer.SSE,
-  MCPTool.SQLite in '..\src\tools\Tier2\MCPTool.SQLite.pas';
+  MCPTool.SQLite in 'MCPTool.SQLite.pas';
 
 var
   MCPServer: TAiMCPServer;

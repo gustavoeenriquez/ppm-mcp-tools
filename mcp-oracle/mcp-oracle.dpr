@@ -8,7 +8,7 @@ uses
   UMakerAi.MCPServer.Stdio,
   UMakerAi.MCPServer.Http,
   UMakerAi.MCPServer.SSE,
-  MCPTool.Oracle in '..\src\tools\Tier3\MCPTool.Oracle.pas';
+  MCPTool.Oracle in 'MCPTool.Oracle.pas';
 
 var
   MCPServer: TAiMCPServer;

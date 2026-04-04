@@ -8,7 +8,7 @@ uses
   UMakerAi.MCPServer.Stdio,
   UMakerAi.MCPServer.Http,
   UMakerAi.MCPServer.SSE,
-  MCPTool.Postgres in '..\src\tools\Tier5\MCPTool.Postgres.pas';
+  MCPTool.Postgres in 'MCPTool.Postgres.pas';
 
 var
   MCPServer: TAiMCPServer;

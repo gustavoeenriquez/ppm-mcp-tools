@@ -8,7 +8,7 @@ uses
   UMakerAi.MCPServer.Stdio,
   UMakerAi.MCPServer.Http,
   UMakerAi.MCPServer.SSE,
-  MCPTool.Telegram in '..\src\tools\Tier4\MCPTool.Telegram.pas';
+  MCPTool.Telegram in 'MCPTool.Telegram.pas';
 
 var
   MCPServer: TAiMCPServer;

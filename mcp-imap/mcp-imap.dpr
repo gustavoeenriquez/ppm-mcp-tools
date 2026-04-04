@@ -8,7 +8,7 @@ uses
   UMakerAi.MCPServer.Stdio,
   UMakerAi.MCPServer.Http,
   UMakerAi.MCPServer.SSE,
-  MCPTool.IMAP in '..\src\tools\Tier4\MCPTool.IMAP.pas';
+  MCPTool.IMAP in 'MCPTool.IMAP.pas';
 
 var
   MCPServer: TAiMCPServer;

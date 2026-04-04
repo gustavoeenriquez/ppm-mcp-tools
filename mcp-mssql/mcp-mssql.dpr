@@ -8,7 +8,7 @@ uses
   UMakerAi.MCPServer.Stdio,
   UMakerAi.MCPServer.Http,
   UMakerAi.MCPServer.SSE,
-  MCPTool.MSSQL in '..\src\tools\Tier3\MCPTool.MSSQL.pas';
+  MCPTool.MSSQL in 'MCPTool.MSSQL.pas';
 
 var
   MCPServer: TAiMCPServer;

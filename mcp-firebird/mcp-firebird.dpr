@@ -8,7 +8,7 @@ uses
   UMakerAi.MCPServer.Stdio,
   UMakerAi.MCPServer.Http,
   UMakerAi.MCPServer.SSE,
-  MCPTool.Firebird in '..\src\tools\Tier3\MCPTool.Firebird.pas';
+  MCPTool.Firebird in 'MCPTool.Firebird.pas';
 
 var
   MCPServer: TAiMCPServer;
