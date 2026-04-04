@@ -1,47 +1,144 @@
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <ProjectGuid>{A1000000-0000-0000-0000-000000000001}</ProjectGuid>
-  </PropertyGroup>
-  <ItemGroup>
-    <Projects Include="mcp-postgres\mcp-postgres.dproj">
-      <Dependencies/>
-    </Projects>
-    <Projects Include="mcp-mysql\mcp-mysql.dproj">
-      <Dependencies/>
-    </Projects>
-    <Projects Include="mcp-mssql\mcp-mssql.dproj">
-      <Dependencies/>
-    </Projects>
-    <Projects Include="mcp-sqlite\mcp-sqlite.dproj">
-      <Dependencies/>
-    </Projects>
-    <Projects Include="mcp-oracle\mcp-oracle.dproj">
-      <Dependencies/>
-    </Projects>
-    <Projects Include="mcp-firebird\mcp-firebird.dproj">
-      <Dependencies/>
-    </Projects>
-    <Projects Include="mcp-odbc\mcp-odbc.dproj">
-      <Dependencies/>
-    </Projects>
-    <Projects Include="mcp-smtp\mcp-smtp.dproj">
-      <Dependencies/>
-    </Projects>
-    <Projects Include="mcp-imap\mcp-imap.dproj">
-      <Dependencies/>
-    </Projects>
-    <Projects Include="mcp-telegram\mcp-telegram.dproj">
-      <Dependencies/>
-    </Projects>
-  </ItemGroup>
-  <Target Name="Build">
-    <MSBuild Projects="@(Projects)" Targets="Build" Properties="Config=Release;Platform=Win64"/>
-  </Target>
-  <Target Name="Rebuild">
-    <MSBuild Projects="@(Projects)" Targets="Rebuild" Properties="Config=Release;Platform=Win64"/>
-  </Target>
-  <Target Name="Clean">
-    <MSBuild Projects="@(Projects)" Targets="Clean" Properties="Config=Release;Platform=Win64"/>
-  </Target>
-  <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{49CBAD79-BCC1-4C5C-9454-47F216DA4E81}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="mcp-postgres\mcp-postgres.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-mysql\mcp-mysql.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-mssql\mcp-mssql.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-sqlite\mcp-sqlite.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-oracle\mcp-oracle.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-firebird\mcp-firebird.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-odbc\mcp-odbc.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-smtp\mcp-smtp.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-imap\mcp-imap.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-telegram\mcp-telegram.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="mcp-postgres">
+        <MSBuild Projects="mcp-postgres\mcp-postgres.dproj"/>
+    </Target>
+    <Target Name="mcp-postgres:Clean">
+        <MSBuild Projects="mcp-postgres\mcp-postgres.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-postgres:Make">
+        <MSBuild Projects="mcp-postgres\mcp-postgres.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-mysql">
+        <MSBuild Projects="mcp-mysql\mcp-mysql.dproj"/>
+    </Target>
+    <Target Name="mcp-mysql:Clean">
+        <MSBuild Projects="mcp-mysql\mcp-mysql.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-mysql:Make">
+        <MSBuild Projects="mcp-mysql\mcp-mysql.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-mssql">
+        <MSBuild Projects="mcp-mssql\mcp-mssql.dproj"/>
+    </Target>
+    <Target Name="mcp-mssql:Clean">
+        <MSBuild Projects="mcp-mssql\mcp-mssql.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-mssql:Make">
+        <MSBuild Projects="mcp-mssql\mcp-mssql.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-sqlite">
+        <MSBuild Projects="mcp-sqlite\mcp-sqlite.dproj"/>
+    </Target>
+    <Target Name="mcp-sqlite:Clean">
+        <MSBuild Projects="mcp-sqlite\mcp-sqlite.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-sqlite:Make">
+        <MSBuild Projects="mcp-sqlite\mcp-sqlite.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-oracle">
+        <MSBuild Projects="mcp-oracle\mcp-oracle.dproj"/>
+    </Target>
+    <Target Name="mcp-oracle:Clean">
+        <MSBuild Projects="mcp-oracle\mcp-oracle.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-oracle:Make">
+        <MSBuild Projects="mcp-oracle\mcp-oracle.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-firebird">
+        <MSBuild Projects="mcp-firebird\mcp-firebird.dproj"/>
+    </Target>
+    <Target Name="mcp-firebird:Clean">
+        <MSBuild Projects="mcp-firebird\mcp-firebird.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-firebird:Make">
+        <MSBuild Projects="mcp-firebird\mcp-firebird.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-odbc">
+        <MSBuild Projects="mcp-odbc\mcp-odbc.dproj"/>
+    </Target>
+    <Target Name="mcp-odbc:Clean">
+        <MSBuild Projects="mcp-odbc\mcp-odbc.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-odbc:Make">
+        <MSBuild Projects="mcp-odbc\mcp-odbc.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-smtp">
+        <MSBuild Projects="mcp-smtp\mcp-smtp.dproj"/>
+    </Target>
+    <Target Name="mcp-smtp:Clean">
+        <MSBuild Projects="mcp-smtp\mcp-smtp.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-smtp:Make">
+        <MSBuild Projects="mcp-smtp\mcp-smtp.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-imap">
+        <MSBuild Projects="mcp-imap\mcp-imap.dproj"/>
+    </Target>
+    <Target Name="mcp-imap:Clean">
+        <MSBuild Projects="mcp-imap\mcp-imap.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-imap:Make">
+        <MSBuild Projects="mcp-imap\mcp-imap.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-telegram">
+        <MSBuild Projects="mcp-telegram\mcp-telegram.dproj"/>
+    </Target>
+    <Target Name="mcp-telegram:Clean">
+        <MSBuild Projects="mcp-telegram\mcp-telegram.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-telegram:Make">
+        <MSBuild Projects="mcp-telegram\mcp-telegram.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="mcp-postgres;mcp-mysql;mcp-mssql;mcp-sqlite;mcp-oracle;mcp-firebird;mcp-odbc;mcp-smtp;mcp-imap;mcp-telegram"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="mcp-postgres:Clean;mcp-mysql:Clean;mcp-mssql:Clean;mcp-sqlite:Clean;mcp-oracle:Clean;mcp-firebird:Clean;mcp-odbc:Clean;mcp-smtp:Clean;mcp-imap:Clean;mcp-telegram:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="mcp-postgres:Make;mcp-mysql:Make;mcp-mssql:Make;mcp-sqlite:Make;mcp-oracle:Make;mcp-firebird:Make;mcp-odbc:Make;mcp-smtp:Make;mcp-imap:Make;mcp-telegram:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
