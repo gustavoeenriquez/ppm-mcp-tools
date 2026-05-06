@@ -51,6 +51,102 @@
         <Projects Include="mcp-webcrawl\mcp-webcrawl.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="mcp-calculator\mcp-calculator.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-datetime\mcp-datetime.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-text-transform\mcp-text-transform.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-regex\mcp-regex.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-json-query\mcp-json-query.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-tokenizer\mcp-tokenizer.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-pdf\mcp-pdf.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-audio\mcp-audio.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-csv\mcp-csv.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-xml\mcp-xml.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-git\mcp-git.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-excel\mcp-excel.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-screen\mcp-screen.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-diff\mcp-diff.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-hash\mcp-hash.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-compress\mcp-compress.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-memory\mcp-memory.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-kv\mcp-kv.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-registry\mcp-registry.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-process\mcp-process.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-fetch\mcp-fetch.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-weather\mcp-weather.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-wikipedia\mcp-wikipedia.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-maps\mcp-maps.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-rss\mcp-rss.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-currency\mcp-currency.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-ftp\mcp-ftp.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-network\mcp-network.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-redis\mcp-redis.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-smtp\mcp-smtp.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-imap\mcp-imap.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="mcp-telegram\mcp-telegram.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -203,14 +299,302 @@
     <Target Name="mcp-webcrawl:Make">
         <MSBuild Projects="mcp-webcrawl\mcp-webcrawl.dproj" Targets="Make"/>
     </Target>
+    <Target Name="mcp-calculator">
+        <MSBuild Projects="mcp-calculator\mcp-calculator.dproj"/>
+    </Target>
+    <Target Name="mcp-calculator:Clean">
+        <MSBuild Projects="mcp-calculator\mcp-calculator.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-calculator:Make">
+        <MSBuild Projects="mcp-calculator\mcp-calculator.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-datetime">
+        <MSBuild Projects="mcp-datetime\mcp-datetime.dproj"/>
+    </Target>
+    <Target Name="mcp-datetime:Clean">
+        <MSBuild Projects="mcp-datetime\mcp-datetime.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-datetime:Make">
+        <MSBuild Projects="mcp-datetime\mcp-datetime.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-text-transform">
+        <MSBuild Projects="mcp-text-transform\mcp-text-transform.dproj"/>
+    </Target>
+    <Target Name="mcp-text-transform:Clean">
+        <MSBuild Projects="mcp-text-transform\mcp-text-transform.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-text-transform:Make">
+        <MSBuild Projects="mcp-text-transform\mcp-text-transform.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-regex">
+        <MSBuild Projects="mcp-regex\mcp-regex.dproj"/>
+    </Target>
+    <Target Name="mcp-regex:Clean">
+        <MSBuild Projects="mcp-regex\mcp-regex.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-regex:Make">
+        <MSBuild Projects="mcp-regex\mcp-regex.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-json-query">
+        <MSBuild Projects="mcp-json-query\mcp-json-query.dproj"/>
+    </Target>
+    <Target Name="mcp-json-query:Clean">
+        <MSBuild Projects="mcp-json-query\mcp-json-query.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-json-query:Make">
+        <MSBuild Projects="mcp-json-query\mcp-json-query.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-tokenizer">
+        <MSBuild Projects="mcp-tokenizer\mcp-tokenizer.dproj"/>
+    </Target>
+    <Target Name="mcp-tokenizer:Clean">
+        <MSBuild Projects="mcp-tokenizer\mcp-tokenizer.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-tokenizer:Make">
+        <MSBuild Projects="mcp-tokenizer\mcp-tokenizer.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-pdf">
+        <MSBuild Projects="mcp-pdf\mcp-pdf.dproj"/>
+    </Target>
+    <Target Name="mcp-pdf:Clean">
+        <MSBuild Projects="mcp-pdf\mcp-pdf.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-pdf:Make">
+        <MSBuild Projects="mcp-pdf\mcp-pdf.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-audio">
+        <MSBuild Projects="mcp-audio\mcp-audio.dproj"/>
+    </Target>
+    <Target Name="mcp-audio:Clean">
+        <MSBuild Projects="mcp-audio\mcp-audio.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-audio:Make">
+        <MSBuild Projects="mcp-audio\mcp-audio.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-csv">
+        <MSBuild Projects="mcp-csv\mcp-csv.dproj"/>
+    </Target>
+    <Target Name="mcp-csv:Clean">
+        <MSBuild Projects="mcp-csv\mcp-csv.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-csv:Make">
+        <MSBuild Projects="mcp-csv\mcp-csv.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-xml">
+        <MSBuild Projects="mcp-xml\mcp-xml.dproj"/>
+    </Target>
+    <Target Name="mcp-xml:Clean">
+        <MSBuild Projects="mcp-xml\mcp-xml.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-xml:Make">
+        <MSBuild Projects="mcp-xml\mcp-xml.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-git">
+        <MSBuild Projects="mcp-git\mcp-git.dproj"/>
+    </Target>
+    <Target Name="mcp-git:Clean">
+        <MSBuild Projects="mcp-git\mcp-git.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-git:Make">
+        <MSBuild Projects="mcp-git\mcp-git.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-excel">
+        <MSBuild Projects="mcp-excel\mcp-excel.dproj"/>
+    </Target>
+    <Target Name="mcp-excel:Clean">
+        <MSBuild Projects="mcp-excel\mcp-excel.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-excel:Make">
+        <MSBuild Projects="mcp-excel\mcp-excel.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-screen">
+        <MSBuild Projects="mcp-screen\mcp-screen.dproj"/>
+    </Target>
+    <Target Name="mcp-screen:Clean">
+        <MSBuild Projects="mcp-screen\mcp-screen.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-screen:Make">
+        <MSBuild Projects="mcp-screen\mcp-screen.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-diff">
+        <MSBuild Projects="mcp-diff\mcp-diff.dproj"/>
+    </Target>
+    <Target Name="mcp-diff:Clean">
+        <MSBuild Projects="mcp-diff\mcp-diff.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-diff:Make">
+        <MSBuild Projects="mcp-diff\mcp-diff.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-hash">
+        <MSBuild Projects="mcp-hash\mcp-hash.dproj"/>
+    </Target>
+    <Target Name="mcp-hash:Clean">
+        <MSBuild Projects="mcp-hash\mcp-hash.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-hash:Make">
+        <MSBuild Projects="mcp-hash\mcp-hash.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-compress">
+        <MSBuild Projects="mcp-compress\mcp-compress.dproj"/>
+    </Target>
+    <Target Name="mcp-compress:Clean">
+        <MSBuild Projects="mcp-compress\mcp-compress.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-compress:Make">
+        <MSBuild Projects="mcp-compress\mcp-compress.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-memory">
+        <MSBuild Projects="mcp-memory\mcp-memory.dproj"/>
+    </Target>
+    <Target Name="mcp-memory:Clean">
+        <MSBuild Projects="mcp-memory\mcp-memory.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-memory:Make">
+        <MSBuild Projects="mcp-memory\mcp-memory.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-kv">
+        <MSBuild Projects="mcp-kv\mcp-kv.dproj"/>
+    </Target>
+    <Target Name="mcp-kv:Clean">
+        <MSBuild Projects="mcp-kv\mcp-kv.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-kv:Make">
+        <MSBuild Projects="mcp-kv\mcp-kv.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-registry">
+        <MSBuild Projects="mcp-registry\mcp-registry.dproj"/>
+    </Target>
+    <Target Name="mcp-registry:Clean">
+        <MSBuild Projects="mcp-registry\mcp-registry.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-registry:Make">
+        <MSBuild Projects="mcp-registry\mcp-registry.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-process">
+        <MSBuild Projects="mcp-process\mcp-process.dproj"/>
+    </Target>
+    <Target Name="mcp-process:Clean">
+        <MSBuild Projects="mcp-process\mcp-process.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-process:Make">
+        <MSBuild Projects="mcp-process\mcp-process.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-fetch">
+        <MSBuild Projects="mcp-fetch\mcp-fetch.dproj"/>
+    </Target>
+    <Target Name="mcp-fetch:Clean">
+        <MSBuild Projects="mcp-fetch\mcp-fetch.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-fetch:Make">
+        <MSBuild Projects="mcp-fetch\mcp-fetch.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-weather">
+        <MSBuild Projects="mcp-weather\mcp-weather.dproj"/>
+    </Target>
+    <Target Name="mcp-weather:Clean">
+        <MSBuild Projects="mcp-weather\mcp-weather.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-weather:Make">
+        <MSBuild Projects="mcp-weather\mcp-weather.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-wikipedia">
+        <MSBuild Projects="mcp-wikipedia\mcp-wikipedia.dproj"/>
+    </Target>
+    <Target Name="mcp-wikipedia:Clean">
+        <MSBuild Projects="mcp-wikipedia\mcp-wikipedia.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-wikipedia:Make">
+        <MSBuild Projects="mcp-wikipedia\mcp-wikipedia.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-maps">
+        <MSBuild Projects="mcp-maps\mcp-maps.dproj"/>
+    </Target>
+    <Target Name="mcp-maps:Clean">
+        <MSBuild Projects="mcp-maps\mcp-maps.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-maps:Make">
+        <MSBuild Projects="mcp-maps\mcp-maps.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-rss">
+        <MSBuild Projects="mcp-rss\mcp-rss.dproj"/>
+    </Target>
+    <Target Name="mcp-rss:Clean">
+        <MSBuild Projects="mcp-rss\mcp-rss.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-rss:Make">
+        <MSBuild Projects="mcp-rss\mcp-rss.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-currency">
+        <MSBuild Projects="mcp-currency\mcp-currency.dproj"/>
+    </Target>
+    <Target Name="mcp-currency:Clean">
+        <MSBuild Projects="mcp-currency\mcp-currency.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-currency:Make">
+        <MSBuild Projects="mcp-currency\mcp-currency.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-ftp">
+        <MSBuild Projects="mcp-ftp\mcp-ftp.dproj"/>
+    </Target>
+    <Target Name="mcp-ftp:Clean">
+        <MSBuild Projects="mcp-ftp\mcp-ftp.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-ftp:Make">
+        <MSBuild Projects="mcp-ftp\mcp-ftp.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-network">
+        <MSBuild Projects="mcp-network\mcp-network.dproj"/>
+    </Target>
+    <Target Name="mcp-network:Clean">
+        <MSBuild Projects="mcp-network\mcp-network.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-network:Make">
+        <MSBuild Projects="mcp-network\mcp-network.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-redis">
+        <MSBuild Projects="mcp-redis\mcp-redis.dproj"/>
+    </Target>
+    <Target Name="mcp-redis:Clean">
+        <MSBuild Projects="mcp-redis\mcp-redis.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-redis:Make">
+        <MSBuild Projects="mcp-redis\mcp-redis.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-smtp">
+        <MSBuild Projects="mcp-smtp\mcp-smtp.dproj"/>
+    </Target>
+    <Target Name="mcp-smtp:Clean">
+        <MSBuild Projects="mcp-smtp\mcp-smtp.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-smtp:Make">
+        <MSBuild Projects="mcp-smtp\mcp-smtp.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-imap">
+        <MSBuild Projects="mcp-imap\mcp-imap.dproj"/>
+    </Target>
+    <Target Name="mcp-imap:Clean">
+        <MSBuild Projects="mcp-imap\mcp-imap.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-imap:Make">
+        <MSBuild Projects="mcp-imap\mcp-imap.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="mcp-telegram">
+        <MSBuild Projects="mcp-telegram\mcp-telegram.dproj"/>
+    </Target>
+    <Target Name="mcp-telegram:Clean">
+        <MSBuild Projects="mcp-telegram\mcp-telegram.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="mcp-telegram:Make">
+        <MSBuild Projects="mcp-telegram\mcp-telegram.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="mcp-postgres;mcp-mysql;mcp-mssql;mcp-sqlite;mcp-oracle;mcp-firebird;mcp-odbc;mcp-smtp;mcp-imap;mcp-telegram;mcp-file-reader;mcp-fs;mcp-ini;mcp-shell;mcp-extract;mcp-webcrawl"/>
+        <CallTarget Targets="mcp-postgres;mcp-mysql;mcp-mssql;mcp-sqlite;mcp-oracle;mcp-firebird;mcp-odbc;mcp-smtp;mcp-imap;mcp-telegram;mcp-file-reader;mcp-fs;mcp-ini;mcp-shell;mcp-extract;mcp-webcrawl;mcp-calculator;mcp-datetime;mcp-text-transform;mcp-regex;mcp-json-query;mcp-tokenizer;mcp-pdf;mcp-audio;mcp-csv;mcp-xml;mcp-git;mcp-excel;mcp-screen;mcp-diff;mcp-hash;mcp-compress;mcp-memory;mcp-kv;mcp-registry;mcp-process;mcp-fetch;mcp-weather;mcp-wikipedia;mcp-maps;mcp-rss;mcp-currency;mcp-ftp;mcp-network;mcp-redis;mcp-smtp;mcp-imap;mcp-telegram"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="mcp-postgres:Clean;mcp-mysql:Clean;mcp-mssql:Clean;mcp-sqlite:Clean;mcp-oracle:Clean;mcp-firebird:Clean;mcp-odbc:Clean;mcp-smtp:Clean;mcp-imap:Clean;mcp-telegram:Clean;mcp-file-reader:Clean;mcp-fs:Clean;mcp-ini:Clean;mcp-shell:Clean;mcp-extract:Clean;mcp-webcrawl:Clean"/>
+        <CallTarget Targets="mcp-postgres:Clean;mcp-mysql:Clean;mcp-mssql:Clean;mcp-sqlite:Clean;mcp-oracle:Clean;mcp-firebird:Clean;mcp-odbc:Clean;mcp-smtp:Clean;mcp-imap:Clean;mcp-telegram:Clean;mcp-file-reader:Clean;mcp-fs:Clean;mcp-ini:Clean;mcp-shell:Clean;mcp-extract:Clean;mcp-webcrawl:Clean;mcp-calculator:Clean;mcp-datetime:Clean;mcp-text-transform:Clean;mcp-regex:Clean;mcp-json-query:Clean;mcp-tokenizer:Clean;mcp-pdf:Clean;mcp-audio:Clean;mcp-csv:Clean;mcp-xml:Clean;mcp-git:Clean;mcp-excel:Clean;mcp-screen:Clean;mcp-diff:Clean;mcp-hash:Clean;mcp-compress:Clean;mcp-memory:Clean;mcp-kv:Clean;mcp-registry:Clean;mcp-process:Clean;mcp-fetch:Clean;mcp-weather:Clean;mcp-wikipedia:Clean;mcp-maps:Clean;mcp-rss:Clean;mcp-currency:Clean;mcp-ftp:Clean;mcp-network:Clean;mcp-redis:Clean;mcp-smtp:Clean;mcp-imap:Clean;mcp-telegram:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="mcp-postgres:Make;mcp-mysql:Make;mcp-mssql:Make;mcp-sqlite:Make;mcp-oracle:Make;mcp-firebird:Make;mcp-odbc:Make;mcp-smtp:Make;mcp-imap:Make;mcp-telegram:Make;mcp-file-reader:Make;mcp-fs:Make;mcp-ini:Make;mcp-shell:Make;mcp-extract:Make;mcp-webcrawl:Make"/>
+        <CallTarget Targets="mcp-postgres:Make;mcp-mysql:Make;mcp-mssql:Make;mcp-sqlite:Make;mcp-oracle:Make;mcp-firebird:Make;mcp-odbc:Make;mcp-smtp:Make;mcp-imap:Make;mcp-telegram:Make;mcp-file-reader:Make;mcp-fs:Make;mcp-ini:Make;mcp-shell:Make;mcp-extract:Make;mcp-webcrawl:Make;mcp-calculator:Make;mcp-datetime:Make;mcp-text-transform:Make;mcp-regex:Make;mcp-json-query:Make;mcp-tokenizer:Make;mcp-pdf:Make;mcp-audio:Make;mcp-csv:Make;mcp-xml:Make;mcp-git:Make;mcp-excel:Make;mcp-screen:Make;mcp-diff:Make;mcp-hash:Make;mcp-compress:Make;mcp-memory:Make;mcp-kv:Make;mcp-registry:Make;mcp-process:Make;mcp-fetch:Make;mcp-weather:Make;mcp-wikipedia:Make;mcp-maps:Make;mcp-rss:Make;mcp-currency:Make;mcp-ftp:Make;mcp-network:Make;mcp-redis:Make;mcp-smtp:Make;mcp-imap:Make;mcp-telegram:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

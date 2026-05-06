@@ -1,4 +1,4 @@
-program mcp_filereader;
+﻿program mcp_filereader;
 
 {$APPTYPE CONSOLE}
 

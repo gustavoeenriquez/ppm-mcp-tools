@@ -1,4 +1,4 @@
-program mcp_ini;
+﻿program mcp_ini;
 
 {$APPTYPE CONSOLE}
 
