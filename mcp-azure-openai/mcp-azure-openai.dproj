@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectVersion>20.3</ProjectVersion>
@@ -15,6 +15,12 @@
     <PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Base)'=='true') or '$(Base_Win64)'!=''">
         <Base_Win64>true</Base_Win64><CfgParent>Base</CfgParent><Base>true</Base>
     </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Linux64' and '$(Base)'=='true') or '$(Base_Linux64)'!=''">
+        <Base_Linux64>true</Base_Linux64>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+
     <PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_2)'!=''">
         <Cfg_2>true</Cfg_2><CfgParent>Base</CfgParent><Base>true</Base>
     </PropertyGroup>
@@ -33,6 +39,12 @@
         <Manifest_File>(None)</Manifest_File>
         <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
     </PropertyGroup>
+    <PropertyGroup Condition="'$(Base_Linux64)'!=''">
+        <DCC_ExeOutput>dist-linux-x64</DCC_ExeOutput>
+        <DCC_ConsoleTarget>true</DCC_ConsoleTarget>
+        <Manifest_File>None</Manifest_File>
+    </PropertyGroup>
+
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
         <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
@@ -41,6 +53,11 @@
     <PropertyGroup Condition="'$(Cfg_2)'!='' and '$(Platform)'=='Win64'">
         <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
     </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2)'!='' and '$(Platform)'=='Linux64'">
+        <DCC_Define>RELEASE;LINUX;$(DCC_Define)</DCC_Define>
+        <DCC_Optimize>true</DCC_Optimize>
+    </PropertyGroup>
+
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)"><MainSource>MainSource</MainSource></DelphiCompile>
         <DCCReference Include="MCPTool.AzureOpenAI.pas"/>
