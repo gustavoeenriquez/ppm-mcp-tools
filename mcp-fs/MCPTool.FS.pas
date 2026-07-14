@@ -205,6 +205,10 @@ var
 begin
   List := TList<TFSEntry>.Create;
   try
+    // Los metadatos de cada entrada se leen con protección: una entrada
+    // problemática (junction inaccesible tipo C:\Users\Default User, o un
+    // archivo con nombre de dispositivo reservado como 'nul') no debe
+    // abortar el listado completo.
     Dirs := TDirectory.GetDirectories(BasePath, Pat, SearchOpt);
     for FP in Dirs do
     begin
@@ -212,7 +216,11 @@ begin
       E.Path     := FP;
       E.IsDir    := True;
       E.Size     := 0;
-      E.Modified := TDirectory.GetLastWriteTime(FP);
+      try
+        E.Modified := TDirectory.GetLastWriteTime(FP);
+      except
+        E.Modified := 0;
+      end;
       List.Add(E);
     end;
     Files := TDirectory.GetFiles(BasePath, Pat, SearchOpt);
@@ -221,8 +229,13 @@ begin
       E.Name     := TPath.GetFileName(FP);
       E.Path     := FP;
       E.IsDir    := False;
-      E.Size     := TFile.GetSize(FP);
-      E.Modified := TFile.GetLastWriteTime(FP);
+      try
+        E.Size     := TFile.GetSize(FP);
+        E.Modified := TFile.GetLastWriteTime(FP);
+      except
+        E.Size     := 0;
+        E.Modified := 0;
+      end;
       List.Add(E);
     end;
     Result := List.ToArray;
