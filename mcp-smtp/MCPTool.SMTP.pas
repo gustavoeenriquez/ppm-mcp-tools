@@ -1,4 +1,4 @@
-// Nombre: Gustavo Enríquez
+﻿// Nombre: Gustavo Enríquez
 // Redes Sociales:
 // - Email: gustavoeenriquez@gmail.com
 
@@ -53,7 +53,8 @@ type
     FHtmlBody:    string;
     FAttachments: string;
   public
-    [AiMCPSchemaDescription('SMTP server hostname (e.g. smtp.zoho.com, smtp.gmail.com)')]
+    [AiMCPOptional]
+    [AiMCPSchemaDescription('SMTP server hostname (e.g. smtp.zoho.com, smtp.gmail.com). Omit to use the server-configured MAIL_SMTP_HOST.')]
     property Host:        string  read FHost        write FHost;
 
     [AiMCPOptional]
@@ -72,7 +73,8 @@ type
     [AiMCPSchemaDescription('SMTP password or app password')]
     property Password:    string  read FPassword    write FPassword;
 
-    [AiMCPSchemaDescription('Sender email address')]
+    [AiMCPOptional]
+    [AiMCPSchemaDescription('Sender email address. Omit to use the server-configured MAIL_FROM (or MAIL_USER).')]
     property From:        string  read FFrom        write FFrom;
 
     [AiMCPOptional]
@@ -126,8 +128,19 @@ var
   SSL:  TTaurusTLSIOHandlerSocket;
 begin
   try
-    if AParams.Host       = '' then raise Exception.Create('"host" is required');
-    if AParams.From       = '' then raise Exception.Create('"from" is required');
+    // Fallback a variables de entorno (conector MakerCLI u otro host MCP):
+    // la credencial se inyecta al proceso y nunca pasa por el LLM.
+    if AParams.Host     = '' then AParams.Host     := GetEnvironmentVariable('MAIL_SMTP_HOST');
+    if AParams.Username = '' then AParams.Username := GetEnvironmentVariable('MAIL_USER');
+    if AParams.Password = '' then AParams.Password := GetEnvironmentVariable('MAIL_PASS');
+    if AParams.Port     = 0  then AParams.Port     := StrToIntDef(GetEnvironmentVariable('MAIL_SMTP_PORT'), 0);
+    if AParams.SSL      = '' then AParams.SSL      := GetEnvironmentVariable('MAIL_SMTP_SSL');
+    if AParams.From     = '' then AParams.From     := GetEnvironmentVariable('MAIL_FROM');
+    if AParams.From     = '' then AParams.From     := GetEnvironmentVariable('MAIL_USER');
+    if AParams.FromName = '' then AParams.FromName := GetEnvironmentVariable('MAIL_FROM_NAME');
+
+    if AParams.Host       = '' then raise Exception.Create('"host" is required (or configure MAIL_SMTP_HOST)');
+    if AParams.From       = '' then raise Exception.Create('"from" is required (or configure MAIL_FROM / MAIL_USER)');
     if AParams.Recipients = '' then raise Exception.Create('"recipients" is required');
     if AParams.Subject    = '' then raise Exception.Create('"subject" is required');
     if (AParams.Body = '') and (AParams.HtmlBody = '') then
@@ -245,7 +258,9 @@ begin
     'Example for Zoho: host="smtp.zoho.com" port=587 ssl="starttls" username="user@zoho.com" password="pass" from="user@zoho.com" recipients="dest@example.com" subject="Hello" body="Hi there". ' +
     'Example for Gmail: host="smtp.gmail.com" port=587 ssl="starttls" username="user@gmail.com" password="app-password" from="user@gmail.com" recipients="dest@example.com" subject="Hello" body="Hi". ' +
     'Optional: from_name, cc, bcc, html_body, attachments (comma-separated file paths). ' +
-    'Returns: {"ok":true,"from":"...","recipients":"...","subject":"..."}.';
+    'Returns: {"ok":true,"from":"...","recipients":"...","subject":"..."}. ' +
+    'If the server has MAIL_* environment configured (e.g. a MakerCLI connector), ' +
+    'omit host/username/password/from entirely — never ask the user for credentials.';
 end;
 
 procedure RegisterTools(AServer: TAiMCPServer);

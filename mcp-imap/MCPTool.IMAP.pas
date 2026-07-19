@@ -64,7 +64,8 @@ type
     FDestFolder: string;
     FMarkAs:     string;
   public
-    [AiMCPSchemaDescription('IMAP server hostname (e.g. imap.gmail.com, outlook.office365.com)')]
+    [AiMCPOptional]
+    [AiMCPSchemaDescription('IMAP server hostname (e.g. imap.gmail.com, outlook.office365.com). Omit to use the server-configured MAIL_IMAP_HOST.')]
     property Host:       string  read FHost       write FHost;
 
     [AiMCPOptional]
@@ -75,10 +76,12 @@ type
     [AiMCPSchemaDescription('SSL mode: ssl (default, port 993), starttls (port 143), none')]
     property SSL:        string  read FSSL        write FSSL;
 
-    [AiMCPSchemaDescription('IMAP username (usually the email address)')]
+    [AiMCPOptional]
+    [AiMCPSchemaDescription('IMAP username (usually the email address). Omit to use the server-configured MAIL_USER.')]
     property Username:   string  read FUsername   write FUsername;
 
-    [AiMCPSchemaDescription('IMAP password or app password')]
+    [AiMCPOptional]
+    [AiMCPSchemaDescription('IMAP password or app password. Omit to use the server-configured MAIL_PASS — never ask the user for it.')]
     property Password:   string  read FPassword   write FPassword;
 
     [AiMCPOptional]
@@ -270,9 +273,17 @@ var
   SSL:  TTaurusTLSIOHandlerSocket;
 begin
   try
-    if AParams.Host     = '' then raise Exception.Create('"host" is required');
-    if AParams.Username = '' then raise Exception.Create('"username" is required');
-    if AParams.Password = '' then raise Exception.Create('"password" is required');
+    // Fallback a variables de entorno (conector MakerCLI u otro host MCP):
+    // la credencial se inyecta al proceso y nunca pasa por el LLM.
+    if AParams.Host     = '' then AParams.Host     := GetEnvironmentVariable('MAIL_IMAP_HOST');
+    if AParams.Username = '' then AParams.Username := GetEnvironmentVariable('MAIL_USER');
+    if AParams.Password = '' then AParams.Password := GetEnvironmentVariable('MAIL_PASS');
+    if AParams.Port     = 0  then AParams.Port     := StrToIntDef(GetEnvironmentVariable('MAIL_IMAP_PORT'), 0);
+    if AParams.SSL      = '' then AParams.SSL      := GetEnvironmentVariable('MAIL_IMAP_SSL');
+
+    if AParams.Host     = '' then raise Exception.Create('"host" is required (or configure MAIL_IMAP_HOST)');
+    if AParams.Username = '' then raise Exception.Create('"username" is required (or configure MAIL_USER)');
+    if AParams.Password = '' then raise Exception.Create('"password" is required (or configure MAIL_PASS)');
 
     var Op     := LowerCase(Trim(AParams.Operation));
     if Op = '' then Op := 'folders';
@@ -448,7 +459,9 @@ begin
     'Params: host, port (993), ssl (ssl/starttls/none), username, password, ' +
     'operation, folder (INBOX), uid (string), filter (all/unseen/seen/flagged), ' +
     'from_str, subject_str, limit (20), dest_folder, mark_as. ' +
-    'Gmail: imap.gmail.com:993 ssl + App Password. Outlook: outlook.office365.com:993.';
+    'Gmail: imap.gmail.com:993 ssl + App Password. Outlook: outlook.office365.com:993. ' +
+    'If the server has MAIL_* environment configured (e.g. a MakerCLI connector), ' +
+    'omit host/username/password entirely — never ask the user for credentials.';
 end;
 
 procedure RegisterTools(AServer: TAiMCPServer);
