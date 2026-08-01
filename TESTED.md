@@ -120,6 +120,7 @@ Leyenda: ✅ probado · ⬜ pendiente · — no aplica (Win64 only)
 
 | Tool | Win64 | Linux64 | Calls probados |
 |------|:-----:|:-------:|----------------|
+| [mcp-email](./mcp-email/) | ✅ | — | initialize, imap folders, imap list, smtp send — en vivo contra Zoho (imappro/smtppro, TLS real) |
 | [mcp-imap](./mcp-imap/) | ⬜ | ⬜ | |
 | [mcp-sendgrid](./mcp-sendgrid/) | ⬜ | ⬜ | |
 | [mcp-smtp](./mcp-smtp/) | ⬜ | ⬜ | |
@@ -130,7 +131,7 @@ Leyenda: ✅ probado · ⬜ pendiente · — no aplica (Win64 only)
 | Tool | Win64 | Linux64 | Calls probados |
 |------|:-----:|:-------:|----------------|
 | [mcp-file-reader](./mcp-file-reader/) | ✅ | ✅ | write, read, list, exists, info, mkdir (6) |
-| [mcp-fs](./mcp-fs/) | ⬜ | — | |
+| [mcp-fs](./mcp-fs/) | ✅ | ⬜ | write, read, exists, copy, list, stat (6) |
 | [mcp-ftp](./mcp-ftp/) | ⬜ | ⬜ | |
 | [mcp-ini](./mcp-ini/) | ✅ | ✅ | read, read_section, write, list_sections, list_keys (5) |
 | [mcp-shell](./mcp-shell/) | ✅ | ✅ | cmd echo, powershell ps (Win64); bash echo, ls, uname (Linux64) |
