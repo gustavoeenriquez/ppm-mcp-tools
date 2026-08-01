@@ -1,5 +1,5 @@
 name        = mcp-email
-version     = 1.0.0
+version     = 1.0.1
 type        = mcp
 description = Email connector: read and manage mail via IMAP plus send via SMTP in one MCP server. Credentials via MAIL_* environment variables (MakerCLI connector-ready). Works with Gmail app passwords, Outlook, Zoho and any standard IMAP/SMTP provider.
 author      = PascalAI

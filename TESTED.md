@@ -120,7 +120,7 @@ Leyenda: ✅ probado · ⬜ pendiente · — no aplica (Win64 only)
 
 | Tool | Win64 | Linux64 | Calls probados |
 |------|:-----:|:-------:|----------------|
-| [mcp-email](./mcp-email/) | ✅ | — | initialize, imap folders, imap list, smtp send — en vivo contra Zoho (imappro/smtppro, TLS real) |
+| [mcp-email](./mcp-email/) | ✅ | ✅ | initialize, imap folders, imap list, smtp send — en vivo contra Zoho (imappro/smtppro, TLS real) en ambas plataformas; Linux64 con OpenSSL del sistema (VPS Ubuntu 24.04) |
 | [mcp-imap](./mcp-imap/) | ⬜ | ⬜ | |
 | [mcp-sendgrid](./mcp-sendgrid/) | ⬜ | ⬜ | |
 | [mcp-smtp](./mcp-smtp/) | ⬜ | ⬜ | |
