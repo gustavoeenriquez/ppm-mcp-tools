@@ -129,7 +129,7 @@ implementation
 uses
   System.SysUtils,
   System.Classes,
-  Winapi.Windows;
+  MCPTool.ProcRunner;
 
 { TAnsibleParams }
 
@@ -161,65 +161,18 @@ end;
 
 function TAnsibleTool.RunCmd(const Cmd: string; TimeoutSec: Integer): TJSONObject;
 var
-  SA:        TSecurityAttributes;
-  PipeRead, PipeWrite: THandle;
-  PI:        TProcessInformation;
-  SI:        TStartupInfo;
-  ExitCode:  DWORD;
-  WaitResult: DWORD;
-  Buffer:    array[0..4095] of AnsiChar;
-  BytesRead: DWORD;
-  Output:    string;
-  TOut:      DWORD;
-  CmdLine:   string;
+  Output:   string;
+  ExitCode: Integer;
+  TimedOut: Boolean;
 begin
-  SA.nLength              := SizeOf(SA);
-  SA.lpSecurityDescriptor := nil;
-  SA.bInheritHandle       := True;
-
-  if not CreatePipe(PipeRead, PipeWrite, @SA, 0) then
-    raise Exception.Create('CreatePipe failed: ' + SysErrorMessage(GetLastError));
-  SetHandleInformation(PipeRead, HANDLE_FLAG_INHERIT, 0);
-
-  FillChar(SI, SizeOf(SI), 0);
-  SI.cb         := SizeOf(SI);
-  SI.dwFlags    := STARTF_USESTDHANDLES;
-  SI.hStdOutput := PipeWrite;
-  SI.hStdError  := PipeWrite;
-  SI.hStdInput  := INVALID_HANDLE_VALUE;
-
-  TOut    := TimeoutSec; if TOut <= 0 then TOut := 300;
-  CmdLine := 'cmd.exe /c ' + Cmd + ' 2>&1';
-
-  FillChar(PI, SizeOf(PI), 0);
-  if not CreateProcess(nil, PChar(CmdLine), nil, nil, True,
-    CREATE_NO_WINDOW, nil, nil, SI, PI) then
-  begin
-    CloseHandle(PipeWrite);
-    CloseHandle(PipeRead);
+  if not RunCaptured(Cmd, '', TimeoutSec, Output, ExitCode, TimedOut) then
     raise Exception.Create('Failed to run command: ' + SysErrorMessage(GetLastError));
-  end;
-
-  CloseHandle(PipeWrite);
-  Output := '';
-  repeat
-    if not ReadFile(PipeRead, Buffer, SizeOf(Buffer) - 1, BytesRead, nil) then Break;
-    if BytesRead = 0 then Break;
-    Buffer[BytesRead] := #0;
-    Output := Output + string(AnsiString(PChar(@Buffer[0])));
-  until False;
-
-  WaitResult := WaitForSingleObject(PI.hProcess, TOut * 1000);
-  GetExitCodeProcess(PI.hProcess, ExitCode);
-  CloseHandle(PI.hProcess);
-  CloseHandle(PI.hThread);
-  CloseHandle(PipeRead);
 
   Result := TJSONObject.Create;
   Result.AddPair('output', Output.Trim);
   Result.AddPair('exit_code', TJSONNumber.Create(ExitCode));
   Result.AddPair('ok', TJSONBool.Create(ExitCode = 0));
-  if WaitResult = WAIT_TIMEOUT then
+  if TimedOut then
     Result.AddPair('timeout', TJSONBool.Create(True));
 end;
 

@@ -92,7 +92,7 @@ implementation
 
 uses
   System.StrUtils,
-  Winapi.Windows;
+  MCPTool.ProcRunner;
 
 { TNetworkParams }
 
@@ -109,65 +109,15 @@ end;
 
 function TNetworkTool.RunCommand(const Cmd: string): string;
 var
-  SI:         TStartupInfo;
-  PI:         TProcessInformation;
-  SA:         TSecurityAttributes;
-  hRead, hWrite: THandle;
-  Buffer:     array[0..4095] of AnsiChar;
-  BytesRead:  DWORD;
-  Lines:      TStringList;
+  Output:   string;
+  ExitCode: Integer;
+  TimedOut: Boolean;
 begin
-  Result := '';
-  SA.nLength              := SizeOf(SA);
-  SA.bInheritHandle       := True;
-  SA.lpSecurityDescriptor := nil;
-
-  if not CreatePipe(hRead, hWrite, @SA, 0) then
-    raise Exception.Create('CreatePipe failed');
-  try
-    SetHandleInformation(hRead, HANDLE_FLAG_INHERIT, 0);
-
-    FillChar(SI, SizeOf(SI), 0);
-    SI.cb          := SizeOf(SI);
-    SI.dwFlags     := STARTF_USESTDHANDLES or STARTF_USESHOWWINDOW;
-    SI.hStdOutput  := hWrite;
-    SI.hStdError   := hWrite;
-    SI.wShowWindow := SW_HIDE;
-
-    var CmdLine := 'cmd.exe /C ' + Cmd;
-    var CmdBuf  := CmdLine;
-
-    FillChar(PI, SizeOf(PI), 0);
-    if not CreateProcess(nil, PChar(CmdBuf), nil, nil, True,
-      CREATE_NO_WINDOW, nil, nil, SI, PI) then
-    begin
-      CloseHandle(hRead);
-      CloseHandle(hWrite);
-      raise Exception.Create('CreateProcess failed: ' + Cmd);
-    end;
-
-    CloseHandle(hWrite);
-    hWrite := 0;
-
-    Lines := TStringList.Create;
-    try
-      while ReadFile(hRead, Buffer, SizeOf(Buffer) - 1, BytesRead, nil) and (BytesRead > 0) do
-      begin
-        Buffer[BytesRead] := #0;
-        Lines.Add(string(AnsiString(Buffer)));
-      end;
-      WaitForSingleObject(PI.hProcess, INFINITE);
-      Result := Lines.Text;
-    finally
-      Lines.Free;
-    end;
-
-    CloseHandle(PI.hProcess);
-    CloseHandle(PI.hThread);
-  finally
-    CloseHandle(hRead);
-    if hWrite <> 0 then CloseHandle(hWrite);
-  end;
+  // La version Windows esperaba INFINITE; aqui hay un techo para que un
+  // traceroute a un host que no responde no cuelgue al server MCP.
+  if not RunCaptured(Cmd, '', 120, Output, ExitCode, TimedOut) then
+    raise Exception.Create('No se pudo ejecutar: ' + Cmd);
+  Result := Output;
 end;
 
 function TNetworkTool.DoPing(const P: TNetworkParams): TJSONObject;
@@ -185,7 +135,11 @@ begin
   if Cnt <= 0 then Cnt := 4;
   if Cnt > 20 then Cnt := 20;
 
+{$IFDEF MSWINDOWS}
   Output := RunCommand(Format('ping -n %d %s', [Cnt, P.Host]));
+{$ELSE}
+  Output := RunCommand(Format('ping -c %d %s', [Cnt, P.Host]));
+{$ENDIF}
 
   Lines   := TStringList.Create;
   Packets := TJSONArray.Create;
@@ -194,16 +148,21 @@ begin
     Lines.Text := Output;
     for Line in Lines do
     begin
-      var L := Trim(Line);
-      if L.Contains('bytes from') or L.Contains('Reply from') or
-         L.Contains('tiempo') or L.Contains('time') then
-        Packets.Add(L)
-      else if L.Contains('Packets') or L.Contains('Paquetes') or
-              L.Contains('Lost') or L.Contains('perdidos') then
+      var L  := Trim(Line);
+      var LL := LowerCase(L);
+      // El resumen va PRIMERO: en Linux tambien contiene "time", asi que
+      // probando las respuestas antes se colaria entre ellas.
+      if LL.Contains('packets transmitted') or LL.Contains('packet loss') or
+         LL.Contains('paquetes') or LL.Contains('perdidos') or
+         LL.Contains('lost') then
         Stats.AddPair('summary', L)
-      else if L.Contains('Average') or L.Contains('Promedio') or
-              L.Contains('Minimum') or L.Contains('Maximum') then
-        Stats.AddPair('latency', L);
+      else if LL.Contains('rtt min') or LL.Contains('round-trip') or
+              LL.Contains('average') or LL.Contains('promedio') or
+              LL.Contains('minimum') or LL.Contains('maximum') then
+        Stats.AddPair('latency', L)
+      else if LL.Contains('bytes from') or LL.Contains('reply from') or
+              LL.Contains('tiempo') or LL.Contains('time') then
+        Packets.Add(L);
     end;
   finally
     Lines.Free;
@@ -228,7 +187,11 @@ var
 begin
   if P.Host = '' then raise Exception.Create('"host" is required for traceroute');
 
+{$IFDEF MSWINDOWS}
   Output := RunCommand('tracert -d -h 30 ' + P.Host);
+{$ELSE}
+  Output := RunCommand('traceroute -n -m 30 ' + P.Host);
+{$ENDIF}
 
   Lines := TStringList.Create;
   Hops  := TJSONArray.Create;

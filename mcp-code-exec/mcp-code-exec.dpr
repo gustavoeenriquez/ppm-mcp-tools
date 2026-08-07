@@ -1,4 +1,4 @@
-﻿program mcp_code_exec;
+program mcp_code_exec;
 
 {$APPTYPE CONSOLE}
 
@@ -8,6 +8,7 @@ uses
   UMakerAi.MCPServer.Stdio,
   UMakerAi.MCPServer.Http,
   UMakerAi.MCPServer.SSE,
+  MCPTool.ProcRunner in '..\_shared\MCPTool.ProcRunner.pas',
   MCPTool.CodeExec in 'MCPTool.CodeExec.pas';
 
 var

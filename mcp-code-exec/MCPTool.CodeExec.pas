@@ -1,7 +1,7 @@
 unit MCPTool.CodeExec;
 
 (*
-  MCPTool.CodeExec  ·  mcp-code-exec  (port 8651)
+  MCPTool.CodeExec  Â·  mcp-code-exec  (port 8651)
   Execute code snippets in various languages via subprocesses.
 
   Operations:
@@ -83,7 +83,7 @@ uses
   System.SysUtils,
   System.Classes,
   System.IOUtils,
-  Winapi.Windows;
+  MCPTool.ProcRunner;
 
 { TCodeExecParams }
 
@@ -103,11 +103,11 @@ begin
     'Execute code snippets in various languages by spawning subprocesses. ' +
     'Operations: run_python (code, args?, timeoutSec?), ' +
     'run_javascript (code, timeoutSec?), ' +
-    'run_bash (code — written to .bat and run via cmd.exe /c, timeoutSec?), ' +
+    'run_bash (code â€” written to .bat and run via cmd.exe /c, timeoutSec?), ' +
     'run_powershell (code, timeoutSec?), ' +
     'run_sql (code=SQL, databasePath?, timeoutSec?), ' +
     'eval_expression (code=expression, timeoutSec?), ' +
-    'list_runtimes (no params — checks python, node, powershell, sqlite3). ' +
+    'list_runtimes (no params â€” checks python, node, powershell, sqlite3). ' +
     'Temp files are deleted after each run. ' +
     'Requires runtimes installed and in PATH.';
 end;
@@ -115,97 +115,40 @@ end;
 function TCodeExecTool.RunCmd(const Cmd: string; TimeoutSec: Integer;
   const WorkDir: string): TJSONObject;
 var
-  SA:         TSecurityAttributes;
-  PipeRead, PipeWrite: THandle;
-  PI:         TProcessInformation;
-  SI:         TStartupInfo;
-  ExitCode:   DWORD;
-  WaitResult: DWORD;
-  Buffer:     array[0..4095] of AnsiChar;
-  BytesRead:  DWORD;
-  Output:     string;
-  CmdLine:    string;
-  TOut:       DWORD;
-  PWorkDir:   PChar;
+  Output:   string;
+  ExitCode: Integer;
+  TimedOut: Boolean;
+  TOut:     Integer;
 begin
-  SA.nLength              := SizeOf(SA);
-  SA.lpSecurityDescriptor := nil;
-  SA.bInheritHandle       := True;
+  TOut := TimeoutSec;
+  if TOut <= 0 then TOut := 30;   // ejecutar codigo ajeno: timeout corto
 
-  if not CreatePipe(PipeRead, PipeWrite, @SA, 0) then
-    raise Exception.Create('CreatePipe failed: ' + SysErrorMessage(GetLastError));
-  SetHandleInformation(PipeRead, HANDLE_FLAG_INHERIT, 0);
-
-  FillChar(SI, SizeOf(SI), 0);
-  SI.cb         := SizeOf(SI);
-  SI.dwFlags    := STARTF_USESTDHANDLES;
-  SI.hStdOutput := PipeWrite;
-  SI.hStdError  := PipeWrite;
-  SI.hStdInput  := INVALID_HANDLE_VALUE;
-
-  TOut    := TimeoutSec;
-  if TOut <= 0 then TOut := 30;
-
-  CmdLine := 'cmd.exe /c ' + Cmd + ' 2>&1';
-
-  if Trim(WorkDir) <> '' then
-    PWorkDir := PChar(WorkDir)
-  else
-    PWorkDir := nil;
-
-  FillChar(PI, SizeOf(PI), 0);
-  if not CreateProcess(nil, PChar(CmdLine), nil, nil, True,
-    CREATE_NO_WINDOW, nil, PWorkDir, SI, PI) then
-  begin
-    CloseHandle(PipeWrite);
-    CloseHandle(PipeRead);
+  if not RunCaptured(Cmd, Trim(WorkDir), TOut, Output, ExitCode, TimedOut) then
     raise Exception.Create('Failed to run command: ' + SysErrorMessage(GetLastError));
-  end;
-
-  CloseHandle(PipeWrite);
-  Output := '';
-  repeat
-    if not ReadFile(PipeRead, Buffer, SizeOf(Buffer) - 1, BytesRead, nil) then Break;
-    if BytesRead = 0 then Break;
-    Buffer[BytesRead] := #0;
-    Output := Output + string(AnsiString(PChar(@Buffer[0])));
-  until False;
-
-  WaitResult := WaitForSingleObject(PI.hProcess, TOut * 1000);
-  GetExitCodeProcess(PI.hProcess, ExitCode);
-  CloseHandle(PI.hProcess);
-  CloseHandle(PI.hThread);
-  CloseHandle(PipeRead);
 
   Result := TJSONObject.Create;
   Result.AddPair('output',    Output.Trim);
   Result.AddPair('exit_code', TJSONNumber.Create(ExitCode));
   Result.AddPair('ok',        TJSONBool.Create(ExitCode = 0));
-  if WaitResult = WAIT_TIMEOUT then
+  if TimedOut then
     Result.AddPair('timeout', TJSONBool.Create(True));
 end;
 
 function TCodeExecTool.DoRunPython(const P: TCodeExecParams): TJSONObject;
 var
   TmpFile: string;
-  SL:      TStringList;
   Cmd:     string;
   TimeOut: Integer;
 begin
   if Trim(P.Code) = '' then
     raise Exception.Create('"code" is required for run_python');
 
-  TmpFile := TPath.GetTempPath + '\mcp_exec_' + IntToStr(GetTickCount) + '.py';
+  TmpFile := TPath.Combine(TPath.GetTempPath, 'mcp_exec_' + IntToStr(TThread.GetTickCount) + '.py');
   TimeOut  := P.TimeoutSec;
   if TimeOut <= 0 then TimeOut := 30;
 
-  SL := TStringList.Create;
-  try
-    SL.Text := P.Code;
-    SL.SaveToFile(TmpFile);
-  finally
-    SL.Free;
-  end;
+  // Sin BOM (GetBytes no lo emite, SaveToFile si): sh no lo tolera.
+  TFile.WriteAllBytes(TmpFile, TEncoding.UTF8.GetBytes(P.Code));
 
   try
     Cmd := 'python "' + TmpFile + '"';
@@ -222,23 +165,17 @@ end;
 function TCodeExecTool.DoRunJavaScript(const P: TCodeExecParams): TJSONObject;
 var
   TmpFile: string;
-  SL:      TStringList;
   TimeOut: Integer;
 begin
   if Trim(P.Code) = '' then
     raise Exception.Create('"code" is required for run_javascript');
 
-  TmpFile := TPath.GetTempPath + '\mcp_exec_' + IntToStr(GetTickCount) + '.js';
+  TmpFile := TPath.Combine(TPath.GetTempPath, 'mcp_exec_' + IntToStr(TThread.GetTickCount) + '.js');
   TimeOut  := P.TimeoutSec;
   if TimeOut <= 0 then TimeOut := 30;
 
-  SL := TStringList.Create;
-  try
-    SL.Text := P.Code;
-    SL.SaveToFile(TmpFile);
-  finally
-    SL.Free;
-  end;
+  // Sin BOM (GetBytes no lo emite, SaveToFile si): sh no lo tolera.
+  TFile.WriteAllBytes(TmpFile, TEncoding.UTF8.GetBytes(P.Code));
 
   try
     Result := RunCmd('node "' + TmpFile + '"', TimeOut, Trim(P.WorkDir));
@@ -252,26 +189,30 @@ end;
 function TCodeExecTool.DoRunBash(const P: TCodeExecParams): TJSONObject;
 var
   TmpFile: string;
-  SL:      TStringList;
   TimeOut: Integer;
 begin
   if Trim(P.Code) = '' then
     raise Exception.Create('"code" is required for run_bash');
 
-  TmpFile := TPath.GetTempPath + '\mcp_exec_' + IntToStr(GetTickCount) + '.bat';
+  // En Windows el script va a .bat (lo ejecuta cmd.exe); en POSIX a .sh
+  // invocado explicitamente con sh, para no depender del bit de ejecucion.
+{$IFDEF MSWINDOWS}
+  TmpFile := TPath.Combine(TPath.GetTempPath, 'mcp_exec_' + IntToStr(TThread.GetTickCount) + '.bat');
+{$ELSE}
+  TmpFile := TPath.Combine(TPath.GetTempPath, 'mcp_exec_' + IntToStr(TThread.GetTickCount) + '.sh');
+{$ENDIF}
   TimeOut  := P.TimeoutSec;
   if TimeOut <= 0 then TimeOut := 30;
 
-  SL := TStringList.Create;
-  try
-    SL.Text := P.Code;
-    SL.SaveToFile(TmpFile);
-  finally
-    SL.Free;
-  end;
+  // Sin BOM (GetBytes no lo emite, SaveToFile si): sh no lo tolera.
+  TFile.WriteAllBytes(TmpFile, TEncoding.UTF8.GetBytes(P.Code));
 
   try
+{$IFDEF MSWINDOWS}
     Result := RunCmd('"' + TmpFile + '"', TimeOut, Trim(P.WorkDir));
+{$ELSE}
+    Result := RunCmd('sh "' + TmpFile + '"', TimeOut, Trim(P.WorkDir));
+{$ENDIF}
     Result.AddPair('language', 'bash');
   finally
     if TFile.Exists(TmpFile) then
@@ -282,23 +223,17 @@ end;
 function TCodeExecTool.DoRunPowerShell(const P: TCodeExecParams): TJSONObject;
 var
   TmpFile: string;
-  SL:      TStringList;
   TimeOut: Integer;
 begin
   if Trim(P.Code) = '' then
     raise Exception.Create('"code" is required for run_powershell');
 
-  TmpFile := TPath.GetTempPath + '\mcp_exec_' + IntToStr(GetTickCount) + '.ps1';
+  TmpFile := TPath.Combine(TPath.GetTempPath, 'mcp_exec_' + IntToStr(TThread.GetTickCount) + '.ps1');
   TimeOut  := P.TimeoutSec;
   if TimeOut <= 0 then TimeOut := 30;
 
-  SL := TStringList.Create;
-  try
-    SL.Text := P.Code;
-    SL.SaveToFile(TmpFile);
-  finally
-    SL.Free;
-  end;
+  // Sin BOM (GetBytes no lo emite, SaveToFile si): sh no lo tolera.
+  TFile.WriteAllBytes(TmpFile, TEncoding.UTF8.GetBytes(P.Code));
 
   try
     Result := RunCmd(
@@ -315,7 +250,6 @@ function TCodeExecTool.DoRunSQL(const P: TCodeExecParams): TJSONObject;
 var
   TmpFile:  string;
   DbPath:   string;
-  SL:       TStringList;
   TimeOut:  Integer;
   TmpDb:    string;
   UseTmpDb: Boolean;
@@ -323,7 +257,7 @@ begin
   if Trim(P.Code) = '' then
     raise Exception.Create('"code" is required for run_sql');
 
-  TmpFile  := TPath.GetTempPath + '\mcp_exec_' + IntToStr(GetTickCount) + '.sql';
+  TmpFile  := TPath.Combine(TPath.GetTempPath, 'mcp_exec_' + IntToStr(TThread.GetTickCount) + '.sql');
   TimeOut  := P.TimeoutSec;
   if TimeOut <= 0 then TimeOut := 30;
 
@@ -333,18 +267,13 @@ begin
 
   if DbPath = '' then
   begin
-    TmpDb    := TPath.GetTempPath + '\mcp_exec_' + IntToStr(GetTickCount) + '.db';
+    TmpDb    := TPath.Combine(TPath.GetTempPath, 'mcp_exec_' + IntToStr(TThread.GetTickCount) + '.db');
     DbPath   := TmpDb;
     UseTmpDb := True;
   end;
 
-  SL := TStringList.Create;
-  try
-    SL.Text := P.Code;
-    SL.SaveToFile(TmpFile);
-  finally
-    SL.Free;
-  end;
+  // Sin BOM (GetBytes no lo emite, SaveToFile si): sh no lo tolera.
+  TFile.WriteAllBytes(TmpFile, TEncoding.UTF8.GetBytes(P.Code));
 
   try
     Result := RunCmd(
@@ -362,7 +291,6 @@ end;
 function TCodeExecTool.DoEvalExpression(const P: TCodeExecParams): TJSONObject;
 var
   TmpFile:  string;
-  SL:       TStringList;
   TimeOut:  Integer;
   PyCode:   string;
   Expr:     string;
@@ -370,7 +298,7 @@ begin
   if Trim(P.Code) = '' then
     raise Exception.Create('"code" is required for eval_expression');
 
-  TmpFile := TPath.GetTempPath + '\mcp_exec_' + IntToStr(GetTickCount) + '.py';
+  TmpFile := TPath.Combine(TPath.GetTempPath, 'mcp_exec_' + IntToStr(TThread.GetTickCount) + '.py');
   TimeOut  := P.TimeoutSec;
   if TimeOut <= 0 then TimeOut := 30;
 
@@ -384,13 +312,7 @@ begin
   else
     PyCode := 'print(eval("' + Expr.Replace('\','\\').Replace('"','\"') + '"))';
 
-  SL := TStringList.Create;
-  try
-    SL.Text := PyCode;
-    SL.SaveToFile(TmpFile);
-  finally
-    SL.Free;
-  end;
+  TFile.WriteAllBytes(TmpFile, TEncoding.UTF8.GetBytes(PyCode));
 
   try
     Result := RunCmd('python "' + TmpFile + '"', TimeOut, Trim(P.WorkDir));

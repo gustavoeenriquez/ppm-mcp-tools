@@ -23,7 +23,7 @@ uses
   System.JSON,
   System.Classes,
   System.IOUtils,
-  Winapi.Windows;
+  MCPTool.ProcRunner;
 
 type
 
@@ -76,77 +76,23 @@ implementation
 
 function TGitTool.RunGit(const Args, RepoPath: string): string;
 var
-  CmdBuf:    string;
-  SA:        TSecurityAttributes;
-  hRead:     THandle;
-  hWrite:    THandle;
-  SI:        TStartupInfo;
-  PI:        TProcessInformation;
-  Buffer:    array[0..4095] of Byte;
-  BytesRead: DWORD;
-  SB:        TStringBuilder;
-  RawBytes:  TBytes;
+  Cmd:      string;
+  Output:   string;
+  ExitCode: Integer;
+  TimedOut: Boolean;
 begin
   Result := '';
 
   if RepoPath <> '' then
-    CmdBuf := Format('cmd.exe /c git -C "%s" %s', [RepoPath, Args])
+    Cmd := Format('git -C "%s" %s', [RepoPath, Args])
   else
-    CmdBuf := 'cmd.exe /c git ' + Args;
-  UniqueString(CmdBuf);
+    Cmd := 'git ' + Args;
 
-  SA.nLength              := SizeOf(SA);
-  SA.bInheritHandle       := True;
-  SA.lpSecurityDescriptor := nil;
+  // 15 s era el WaitForSingleObject de la version Windows; se conserva.
+  if not RunCaptured(Cmd, '', 15, Output, ExitCode, TimedOut) then
+    Exit;
 
-  if not CreatePipe(hRead, hWrite, @SA, 0) then
-    raise Exception.Create('CreatePipe failed');
-
-  SetHandleInformation(hRead, HANDLE_FLAG_INHERIT, 0);
-
-  try
-    ZeroMemory(@SI, SizeOf(SI));
-    SI.cb          := SizeOf(SI);
-    SI.dwFlags     := STARTF_USESTDHANDLES or STARTF_USESHOWWINDOW;
-    SI.wShowWindow := SW_HIDE;
-    SI.hStdOutput  := hWrite;
-    SI.hStdError   := hWrite;
-    SI.hStdInput   := GetStdHandle(STD_INPUT_HANDLE);
-
-    ZeroMemory(@PI, SizeOf(PI));
-
-    if not CreateProcess(nil, PChar(CmdBuf), nil, nil, True,
-      CREATE_NO_WINDOW, nil, nil, SI, PI) then
-    begin
-      CloseHandle(hRead);
-      CloseHandle(hWrite);
-      Exit;
-    end;
-
-    CloseHandle(hWrite);
-    hWrite := 0;
-
-    SB := TStringBuilder.Create;
-    try
-      repeat
-        if not ReadFile(hRead, Buffer[0], SizeOf(Buffer), BytesRead, nil) then Break;
-        if BytesRead = 0 then Break;
-        SetLength(RawBytes, BytesRead);
-        Move(Buffer[0], RawBytes[0], BytesRead);
-        SB.Append(TEncoding.UTF8.GetString(RawBytes));
-      until BytesRead = 0;
-
-      WaitForSingleObject(PI.hProcess, 15000);
-      Result := Trim(SB.ToString);
-    finally
-      SB.Free;
-      CloseHandle(PI.hProcess);
-      CloseHandle(PI.hThread);
-    end;
-  finally
-    CloseHandle(hRead);
-    if hWrite <> 0 then CloseHandle(hWrite);
-  end;
+  Result := Trim(Output);
 end;
 
 // ── Main execution ──────────────────────────────────────────────────────────

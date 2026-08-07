@@ -8,6 +8,7 @@ uses
   UMakerAi.MCPServer.Stdio,
   UMakerAi.MCPServer.Http,
   UMakerAi.MCPServer.SSE,
+  MCPTool.ProcRunner in '..\_shared\MCPTool.ProcRunner.pas',
   MCPTool.Ansible in 'MCPTool.Ansible.pas';
 
 var

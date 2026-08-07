@@ -1,10 +1,12 @@
-﻿unit MCPTool.Process;
+unit MCPTool.Process;
 
 {
   MCPTool.Process  ·  mcp-process
 
-  Process management using TUtilsSystem (uMakerAi.Utils.System).
+  Gestion de procesos sobre el runner compartido (MCPTool.ProcRunner).
   Windows: tasklist, taskkill, CreateProcess.
+  POSIX:   ps, kill/pkill, y para "start" un lanzamiento en segundo plano
+           del que el shell devuelve el PID.
 
   Operations:
     list  - list running processes (optional name filter).
@@ -23,7 +25,11 @@ uses
   System.SysUtils,
   System.JSON,
   System.Classes,
-  Winapi.Windows;
+  MCPTool.ProcRunner
+{$IFDEF MSWINDOWS}
+  , Winapi.Windows   // solo para el CreateProcess de "start"
+{$ENDIF}
+  ;
 
 type
 
@@ -83,6 +89,18 @@ procedure RegisterTools(AServer: TAiMCPServer);
 
 implementation
 
+{ Sustituye a TUtilsSystem.RunCommandLine, que solo existe en Windows. }
+function RunShell(const ACmd: string): string;
+var
+  Output:   string;
+  ExitCode: Integer;
+  TimedOut: Boolean;
+begin
+  if not RunCaptured(ACmd, '', 60, Output, ExitCode, TimedOut) then
+    raise Exception.Create('No se pudo ejecutar: ' + ACmd);
+  Result := Output;
+end;
+
 { TProcessParams }
 
 constructor TProcessParams.Create;
@@ -115,7 +133,15 @@ var
 begin
   Result  := TJSONArray.Create;
   LFilter := LowerCase(Trim(Filter));
-  Output  := TUtilsSystem.RunCommandLine('tasklist /FO CSV /NH');
+  Output  := RunShell(
+{$IFDEF MSWINDOWS}
+    'tasklist /FO CSV /NH'
+{$ELSE}
+    // ps con columnas fijas y sin cabecera: el orden imita al de tasklist
+    // (nombre, pid, sesion, memoria) para reusar el mismo bucle de parseo.
+    'ps -eo comm=,pid=,tty=,rss='
+{$ENDIF}
+    );
 
   Lines := TStringList.Create;
   try
@@ -125,13 +151,21 @@ begin
       var L := Trim(Line);
       if L = '' then Continue;
 
+{$IFDEF MSWINDOWS}
       Fields := ParseCSVLine(L);
       if Length(Fields) < 5 then Continue;
-
       var ProcName := Fields[0];
       var ProcPid  := StrToIntDef(Fields[1], 0);
       var Session  := Fields[2];
-      var MemStr   := Fields[4]; // e.g. "45,678 K"
+      var MemStr   := Fields[4]; // p.ej. "45,678 K"
+{$ELSE}
+      Fields := L.Split([' '], TStringSplitOptions.ExcludeEmpty);
+      if Length(Fields) < 4 then Continue;
+      var ProcName := Fields[0];
+      var ProcPid  := StrToIntDef(Fields[1], 0);
+      var Session  := Fields[2];
+      var MemStr   := Fields[3] + ' K';   // ps da rss en KiB
+{$ENDIF}
 
       if (LFilter <> '') and not LowerCase(ProcName).Contains(LFilter) then
         Continue;
@@ -222,15 +256,27 @@ begin
   if (P.Pid <= 0) and (P.Name = '') then
     raise Exception.Create('"pid" or "name" required for kill');
 
+{$IFDEF MSWINDOWS}
   if P.Pid > 0 then
     Cmd := Format('taskkill /PID %d /F', [P.Pid])
   else
     Cmd := Format('taskkill /IM "%s" /F', [P.Name]);
+{$ELSE}
+  if P.Pid > 0 then
+    Cmd := Format('kill -9 %d', [P.Pid])
+  else
+    Cmd := Format('pkill -9 -x "%s"', [P.Name]);
+{$ENDIF}
 
-  Output := TUtilsSystem.RunCommandLine(Cmd);
+  Output := RunShell(Cmd);
 
+{$IFDEF MSWINDOWS}
   var Success := Output.Contains('SUCCESS') or Output.Contains('xito') or
                  Output.Contains('ito');
+{$ELSE}
+  // kill y pkill no dicen nada al acertar: el silencio ES el exito.
+  var Success := Trim(Output) = '';
+{$ENDIF}
 
   Result := TJSONObject.Create;
   if P.Pid > 0 then
@@ -244,13 +290,16 @@ end;
 
 function TProcessTool.DoStart(const P: TProcessParams): TJSONObject;
 var
-  SI:  TStartupInfo;
-  PI:  TProcessInformation;
   Cmd: string;
   PID: Cardinal;
+{$IFDEF MSWINDOWS}
+  SI:  TStartupInfo;
+  PI:  TProcessInformation;
+{$ENDIF}
 begin
   if P.Command = '' then raise Exception.Create('"command" required for start');
 
+{$IFDEF MSWINDOWS}
   FillChar(SI, SizeOf(SI), 0);
   SI.cb          := SizeOf(SI);
   SI.dwFlags     := STARTF_USESHOWWINDOW;
@@ -267,6 +316,15 @@ begin
   PID := PI.dwProcessId;
   CloseHandle(PI.hProcess);
   CloseHandle(PI.hThread);
+{$ELSE}
+  // Lanzar en segundo plano desligado del server y quedarse con su PID:
+  // el propio shell lo imprime con $!. La salida del hijo se descarta,
+  // que es justo lo que "start" promete (arrancar, no esperar).
+  Cmd := Format('%s >/dev/null 2>&1 & echo $!', [P.Command]);
+  PID := StrToIntDef(Trim(RunShell(Cmd)), 0);
+  if PID = 0 then
+    raise Exception.Create('No se pudo lanzar: ' + P.Command);
+{$ENDIF}
 
   Result := TJSONObject.Create;
   Result.AddPair('command', P.Command);
@@ -280,7 +338,7 @@ var
 begin
   if P.Command = '' then raise Exception.Create('"command" required for run');
 
-  Output := TUtilsSystem.RunCommandLine(P.Command);
+  Output := RunShell(P.Command);
 
   Result := TJSONObject.Create;
   Result.AddPair('command', P.Command);
