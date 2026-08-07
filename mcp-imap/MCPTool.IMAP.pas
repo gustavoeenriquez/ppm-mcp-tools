@@ -18,13 +18,14 @@ unit MCPTool.IMAP;
   Uses UID-based operations for stable message references.
 
   Operations:
-    folders  - list all mailboxes/folders
-    list     - list messages in a folder (headers, most recent first)
-    get      - retrieve full message by UID
-    search   - search by from/subject criteria
-    move     - copy message to dest_folder then delete from source
-    delete   - mark deleted and expunge
-    mark     - read / unread / flagged / unflagged
+    folders    - list all mailboxes/folders
+    list       - list messages in a folder (headers, most recent first)
+    get        - retrieve full message by UID (includes attachments metadata)
+    attachment - save one attachment (by filename or index) to disk
+    search     - search by from/subject criteria
+    move       - copy message to dest_folder then delete from source
+    delete     - mark deleted and expunge
+    mark       - read / unread / flagged / unflagged
 
   Gmail:   host=imap.gmail.com   port=993  ssl=ssl  + App Password
   Outlook: host=outlook.office365.com  port=993  ssl=ssl
@@ -38,10 +39,12 @@ uses
   System.JSON,
   System.Classes,
   System.StrUtils,
+  System.IOUtils,
   IdIMAP4,
   IdMailBox,
   IdMessage,
   IdText,
+  IdAttachment,
   TaurusTLS,  // reemplaza IdSSLOpenSSL — soporta OpenSSL 1.1.x y 3.x
   IdExplicitTLSClientServerBase;
 
@@ -63,6 +66,8 @@ type
     FLimit:      Integer;
     FDestFolder: string;
     FMarkAs:     string;
+    FAttachment: string;
+    FSaveDir:    string;
   public
     [AiMCPOptional]
     [AiMCPSchemaDescription('IMAP server hostname (e.g. imap.gmail.com, outlook.office365.com). Omit to use the server-configured MAIL_IMAP_HOST.')]
@@ -119,6 +124,14 @@ type
     [AiMCPOptional]
     [AiMCPSchemaDescription('For mark operation: read, unread, flagged, unflagged')]
     property MarkAs:     string  read FMarkAs     write FMarkAs;
+
+    [AiMCPOptional]
+    [AiMCPSchemaDescription('Attachment filename or 0-based part index — required for attachment operation')]
+    property Attachment: string  read FAttachment write FAttachment;
+
+    [AiMCPOptional]
+    [AiMCPSchemaDescription('Directory where the attachment operation saves the file (default: system temp dir)')]
+    property SaveDir:    string  read FSaveDir    write FSaveDir;
   end;
 
   TIMAPTool = class(TAiMCPToolBase<TIMAPParams>)
@@ -220,6 +233,8 @@ begin
   Result := HeaderToJSON(AMsg, AUID);
   Result.AddPair('to', AMsg.Recipients.EMailAddresses);
 
+  var Atts := TJSONArray.Create;
+
   if AMsg.MessageParts.Count > 0 then
   begin
     for var i := 0 to AMsg.MessageParts.Count - 1 do
@@ -232,14 +247,23 @@ begin
           Body := TP.Body.Text
         else if ContainsText(TP.ContentType, 'text/html') and (HtmlBody = '') then
           HtmlBody := TP.Body.Text;
+      end
+      else if Part is TIdAttachment then
+      begin
+        var A := TJSONObject.Create;
+        A.AddPair('index',        TJSONNumber.Create(i));
+        A.AddPair('filename',     TIdAttachment(Part).FileName);
+        A.AddPair('content_type', Part.ContentType);
+        Atts.AddElement(A);
       end;
     end;
   end
   else
     Body := AMsg.Body.Text;
 
-  Result.AddPair('body',      Body);
-  Result.AddPair('html_body', HtmlBody);
+  Result.AddPair('body',        Body);
+  Result.AddPair('html_body',   HtmlBody);
+  Result.AddPair('attachments', Atts);
 end;
 
 function TIMAPTool.FetchHeaders(AIMAP: TIdIMAP4;
@@ -353,6 +377,69 @@ begin
           end;
         end
 
+        // ── attachment ───────────────────────────────────────────────────────
+        else if Op = 'attachment' then
+        begin
+          if AParams.UID        = '' then raise Exception.Create('"uid" is required for attachment');
+          if AParams.Attachment = '' then raise Exception.Create('"attachment" (filename or 0-based index) is required');
+          IMAP.SelectMailBox(Folder);
+          var Msg := TIdMessage.Create(nil);
+          try
+            if not IMAP.UIDRetrieve(AParams.UID, Msg) then
+              raise Exception.Create('Message UID ' + AParams.UID + ' not found');
+
+            var Att: TIdAttachment := nil;
+            var WantIdx := StrToIntDef(AParams.Attachment, -1);
+            for var i := 0 to Msg.MessageParts.Count - 1 do
+            begin
+              var Part := Msg.MessageParts.Items[i];
+              if (Part is TIdAttachment) and
+                 ((i = WantIdx) or
+                  SameText(TIdAttachment(Part).FileName, AParams.Attachment)) then
+              begin
+                Att := TIdAttachment(Part);
+                Break;
+              end;
+            end;
+            if Att = nil then
+              raise Exception.Create('Attachment "' + AParams.Attachment +
+                '" not found in message ' + AParams.UID +
+                ' (use get to see the attachments list)');
+
+            var Dir := Trim(AParams.SaveDir);
+            if Dir = '' then Dir := TPath.GetTempPath;
+            if not TDirectory.Exists(Dir) then TDirectory.CreateDirectory(Dir);
+
+            var FName := TPath.GetFileName(Att.FileName);
+            if FName = '' then FName := 'attachment_uid' + AParams.UID;
+            for var C in TPath.GetInvalidFileNameChars do
+              FName := FName.Replace(C, '_');
+
+            var Dest := TPath.Combine(Dir, FName);
+            Att.SaveToFile(Dest);
+
+            var Sz: Int64 := 0;
+            var SRec: TSearchRec;
+            if FindFirst(Dest, faAnyFile, SRec) = 0 then
+            begin
+              Sz := SRec.Size;
+              FindClose(SRec);
+            end;
+
+            var R := TJSONObject.Create;
+            R.AddPair('ok',           TJSONBool.Create(True));
+            R.AddPair('uid',          AParams.UID);
+            R.AddPair('filename',     Att.FileName);
+            R.AddPair('content_type', Att.ContentType);
+            R.AddPair('saved_path',   Dest);
+            R.AddPair('size',         TJSONNumber.Create(Sz));
+            Result := TAiMCPResponseBuilder.New.AddText(R.ToJSON).Build;
+            R.Free;
+          finally
+            Msg.Free;
+          end;
+        end
+
         // ── search ───────────────────────────────────────────────────────────
         else if Op = 'search' then
         begin
@@ -454,11 +541,13 @@ begin
   FDescription :=
     'Read and manage email via IMAP4. ' +
     'Operations: folders (list mailboxes), list (message headers, most recent first), ' +
-    'get (full message by uid), search (by from_str/subject_str), ' +
+    'get (full message by uid — response includes an attachments array with index/filename/content_type), ' +
+    'attachment (uid + attachment filename-or-index [+ save_dir] — saves the file to disk and returns saved_path so it can be read), ' +
+    'search (by from_str/subject_str), ' +
     'move (uid + dest_folder), delete (uid), mark (uid + mark_as: read/unread/flagged/unflagged). ' +
     'Params: host, port (993), ssl (ssl/starttls/none), username, password, ' +
     'operation, folder (INBOX), uid (string), filter (all/unseen/seen/flagged), ' +
-    'from_str, subject_str, limit (20), dest_folder, mark_as. ' +
+    'from_str, subject_str, limit (20), dest_folder, mark_as, attachment, save_dir. ' +
     'Gmail: imap.gmail.com:993 ssl + App Password. Outlook: outlook.office365.com:993. ' +
     'If the server has MAIL_* environment configured (e.g. a MakerCLI connector), ' +
     'omit host/username/password entirely — never ask the user for credentials.';

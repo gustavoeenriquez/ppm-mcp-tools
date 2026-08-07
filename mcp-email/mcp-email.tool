@@ -1,7 +1,7 @@
 {
   "name": "mcp-email",
-  "description": "Correo completo en un solo conector: lee y gestiona el buzón por IMAP (carpetas, listar, buscar, leer, mover, borrar, marcar) y envía por SMTP (texto, HTML, CC/BCC, adjuntos). Compatible con Gmail (contraseña de aplicación), Outlook, Zoho y cualquier proveedor IMAP/SMTP estándar.",
-  "version": "1.0.1",
+  "description": "Correo completo en un solo conector: lee y gestiona el buzón por IMAP (carpetas, listar, buscar, leer, descargar adjuntos, mover, borrar, marcar) y envía por SMTP (texto, HTML, CC/BCC, adjuntos). Compatible con Gmail (contraseña de aplicación), Outlook, Zoho y cualquier proveedor IMAP/SMTP estándar.",
+  "version": "1.1.0",
   "category": "communication",
   "config": [
     { "key": "MAIL_USER", "label": "Correo (usuario)", "required": true,
@@ -17,7 +17,7 @@
       "help": "Nombre visible en los correos que envíes (opcional)" }
   ],
   "tools": {
-    "mcp-imap": "folders, list, get, search, move, delete, mark — operaciones por UID, más recientes primero",
+    "mcp-imap": "folders, list, get (incluye lista de adjuntos), attachment (guarda un adjunto a disco), search, move, delete, mark — operaciones por UID, más recientes primero",
     "mcp-smtp": "envío con texto plano, HTML, CC/BCC y adjuntos"
   },
   "defaults": "IMAP: puerto 993 ssl. SMTP: puerto 587 starttls. Ajustables con MAIL_IMAP_PORT/MAIL_IMAP_SSL/MAIL_SMTP_PORT/MAIL_SMTP_SSL.",
