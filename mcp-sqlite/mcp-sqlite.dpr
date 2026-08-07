@@ -45,6 +45,7 @@ begin
       MCPServer := TAiMCPStdioServer.Create(nil);
 
     MCPServer.ServerName       := 'mcp-sqlite';
+    MCPServer.ServerVersion := '1.3.9';
     MCPServer.Port             := Port;
     MCPServer.CorsEnabled      := True;
     MCPServer.CorsAllowedOrigins := '*';

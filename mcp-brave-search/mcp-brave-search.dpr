@@ -45,6 +45,7 @@ begin
       MCPServer := TAiMCPStdioServer.Create(nil);
 
     MCPServer.ServerName       := 'mcp-brave-search';
+    MCPServer.ServerVersion := '1.1.6';
     MCPServer.Port             := Port;
     MCPServer.CorsEnabled      := True;
     MCPServer.CorsAllowedOrigins := '*';

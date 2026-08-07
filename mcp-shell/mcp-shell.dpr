@@ -45,6 +45,7 @@ begin
       MCPServer := TAiMCPStdioServer.Create(nil);
 
     MCPServer.ServerName       := 'mcp-shell';
+    MCPServer.ServerVersion := '1.1.9';
     MCPServer.Port             := Port;
     MCPServer.CorsEnabled      := True;
     MCPServer.CorsAllowedOrigins := '*';

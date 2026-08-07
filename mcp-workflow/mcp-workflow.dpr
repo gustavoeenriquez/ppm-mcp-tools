@@ -31,6 +31,7 @@ begin
     else if SameText(Protocol, 'http') then MCPServer := TAiMCPHttpServer.Create(nil)
     else MCPServer := TAiMCPStdioServer.Create(nil);
     MCPServer.ServerName := 'mcp-workflow';
+    MCPServer.ServerVersion := '1.0.6';
     MCPServer.Port := Port;
     MCPServer.CorsEnabled := True;
     MCPServer.CorsAllowedOrigins := '*';

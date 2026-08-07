@@ -45,6 +45,7 @@ begin
       MCPServer := TAiMCPStdioServer.Create(nil);
 
     MCPServer.ServerName        := 'mcp-json-query';
+    MCPServer.ServerVersion := '1.1.10';
     MCPServer.Port              := Port;
     MCPServer.CorsEnabled       := True;
     MCPServer.CorsAllowedOrigins := '*';

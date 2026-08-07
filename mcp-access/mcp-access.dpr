@@ -21,6 +21,7 @@ begin
     else if SameText(Protocol,'http') then MCPServer:=TAiMCPHttpServer.Create(nil)
     else MCPServer:=TAiMCPStdioServer.Create(nil);
     MCPServer.ServerName:='mcp-access'; MCPServer.Port:=Port;
+    MCPServer.ServerVersion := '1.0.2';
     MCPServer.CorsEnabled:=True; MCPServer.CorsAllowedOrigins:='*';
     MCPTool.MSAccess.RegisterTools(MCPServer);
     MCPServer.Start;

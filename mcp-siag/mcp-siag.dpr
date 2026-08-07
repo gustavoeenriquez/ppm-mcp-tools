@@ -1,4 +1,4 @@
-program mcp_coingecko;
+﻿program mcp_siag;
 
 {$APPTYPE CONSOLE}
 
@@ -8,7 +8,8 @@ uses
   UMakerAi.MCPServer.Stdio,
   UMakerAi.MCPServer.Http,
   UMakerAi.MCPServer.SSE,
-  MCPTool.CoinGecko in 'MCPTool.CoinGecko.pas';
+  MCPTool.SiagClient in '..\_shared\MCPTool.SiagClient.pas',
+  MCPTool.Siag in 'MCPTool.Siag.pas';
 
 var
   MCPServer: TAiMCPServer;
@@ -18,7 +19,7 @@ var
 
 begin
   Protocol := 'stdio';
-  Port     := 8710;
+  Port     := 8770;
 
   i := 1;
   while i <= ParamCount do
@@ -44,21 +45,21 @@ begin
     else
       MCPServer := TAiMCPStdioServer.Create(nil);
 
-    MCPServer.ServerName       := 'mcp-coingecko';
-    MCPServer.ServerVersion := '1.0.5';
-    MCPServer.Port             := Port;
-    MCPServer.CorsEnabled      := True;
+    MCPServer.ServerName         := 'mcp-siag';
+    MCPServer.ServerVersion := '1.0.2';
+    MCPServer.Port               := Port;
+    MCPServer.CorsEnabled        := True;
     MCPServer.CorsAllowedOrigins := '*';
 
-    MCPTool.CoinGecko.RegisterTools(MCPServer);
+    MCPTool.Siag.RegisterTools(MCPServer);
     MCPServer.Start;
 
     if MCPServer is TAiMCPSSEHttpServer then
-      WriteLn(ErrOutput, Format('[mcp-coingecko] SSE  --> http://localhost:%d/sse', [Port]))
+      WriteLn(ErrOutput, Format('[mcp-siag] SSE  -> http://localhost:%d/sse', [Port]))
     else if MCPServer is TAiMCPHttpServer then
-      WriteLn(ErrOutput, Format('[mcp-coingecko] HTTP --> http://localhost:%d/mcp', [Port]))
+      WriteLn(ErrOutput, Format('[mcp-siag] HTTP -> http://localhost:%d/mcp', [Port]))
     else
-      WriteLn(ErrOutput, '[mcp-coingecko] Stdio -- waiting for JSON-RPC on stdin.');
+      WriteLn(ErrOutput, '[mcp-siag] Stdio -- waiting for JSON-RPC on stdin.');
 
     while True do
       Sleep(1000);
@@ -66,7 +67,7 @@ begin
   except
     on E: Exception do
     begin
-      WriteLn(ErrOutput, '[mcp-coingecko] Fatal: ' + E.Message);
+      WriteLn(ErrOutput, '[mcp-siag] Fatal: ' + E.Message);
       Halt(1);
     end;
   end;

@@ -46,6 +46,7 @@ begin
       MCPServer := TAiMCPStdioServer.Create(nil);
 
     MCPServer.ServerName       := 'mcp-MySQL';
+    MCPServer.ServerVersion := '1.0.10';
     MCPServer.Port             := Port;
     MCPServer.CorsEnabled      := True;
     MCPServer.CorsAllowedOrigins := '*';

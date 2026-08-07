@@ -32,6 +32,7 @@ begin
     else if SameText(Protocol, 'http') then MCPServer := TAiMCPHttpServer.Create(nil)
     else MCPServer := TAiMCPStdioServer.Create(nil);
     MCPServer.ServerName := 'mcp-db2';
+    MCPServer.ServerVersion := '1.0.5';
     MCPServer.Port := Port;
     MCPServer.CorsEnabled := True;
     MCPServer.CorsAllowedOrigins := '*';

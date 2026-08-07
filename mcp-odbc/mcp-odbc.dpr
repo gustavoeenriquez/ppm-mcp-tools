@@ -46,6 +46,7 @@ begin
       MCPServer := TAiMCPStdioServer.Create(nil);
 
     MCPServer.ServerName       := 'mcp-ODBC';
+    MCPServer.ServerVersion := '1.0.9';
     MCPServer.Port             := Port;
     MCPServer.CorsEnabled      := True;
     MCPServer.CorsAllowedOrigins := '*';

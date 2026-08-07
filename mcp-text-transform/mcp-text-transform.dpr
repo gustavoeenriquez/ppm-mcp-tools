@@ -45,6 +45,7 @@ begin
       MCPServer := TAiMCPStdioServer.Create(nil);
 
     MCPServer.ServerName        := 'mcp-text-transform';
+    MCPServer.ServerVersion := '1.0.16';
     MCPServer.Port              := Port;
     MCPServer.CorsEnabled       := True;
     MCPServer.CorsAllowedOrigins := '*';

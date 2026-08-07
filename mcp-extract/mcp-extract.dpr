@@ -45,6 +45,7 @@ begin
       MCPServer := TAiMCPStdioServer.Create(nil);
 
     MCPServer.ServerName        := 'mcp-extract';
+    MCPServer.ServerVersion := '1.2.8';
     MCPServer.Port              := Port;
     MCPServer.CorsEnabled       := True;
     MCPServer.CorsAllowedOrigins := '*';

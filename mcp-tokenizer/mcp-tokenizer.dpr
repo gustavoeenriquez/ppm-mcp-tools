@@ -45,6 +45,7 @@ begin
       MCPServer := TAiMCPStdioServer.Create(nil);
 
     MCPServer.ServerName        := 'mcp-tokenizer';
+    MCPServer.ServerVersion := '1.0.14';
     MCPServer.Port              := Port;
     MCPServer.CorsEnabled       := True;
     MCPServer.CorsAllowedOrigins := '*';
