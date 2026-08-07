@@ -1,0 +1,7 @@
+name        = mcp-conta
+version     = 1.0.1
+type        = mcp
+description = Full access to the PascalAI accounting system (ConServer, Colombia): 25 domain tools with 337 operations (comprobantes, PUC, terceros, reportes, retenciones, nomina, ventas, compras, inventario, tesoreria, cobranza, POS, CRM, facturacion electronica DIAN). Includes write operations. Auth via CONTA_* env vars, overridable per call. Windows and Linux. For a read-only surface use mcp-conta-query.
+author      = PascalAI
+tags        = contabilidad,accounting,colombia,erp,puc,dian,comprobantes,nomina,ventas,pos,crm,agent,datasnap,linux
+entrypoint  = mcp-conta.exe

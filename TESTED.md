@@ -5,7 +5,7 @@ Win64 = binario local. Linux64 = VPS 93.189.90.165.
 
 Leyenda: ✅ probado · ⬜ pendiente · — no aplica (Win64 only)
 
-<!-- STATS: Win64=27/101  Linux64=26/89 -->
+<!-- STATS: Win64=29/103  Linux64=26/91 -->
 
 ## Databases — Relational (FireDAC)
 
@@ -89,6 +89,13 @@ Leyenda: ✅ probado · ⬜ pendiente · — no aplica (Win64 only)
 | [mcp-shopify](./mcp-shopify/) | ⬜ | ⬜ | |
 | [mcp-zendesk](./mcp-zendesk/) | ⬜ | ⬜ | |
 | [mcp-zoom](./mcp-zoom/) | ⬜ | ⬜ | |
+
+## Business Intelligence
+
+| Tool | Win64 | Linux64 | Calls probados |
+|------|:-----:|:-------:|----------------|
+| [mcp-siag](./mcp-siag/) | ✅ | ⬜ | health, get_me, execute_dsl (seed 25 stmts: CREATE/LOAD/DEFINE + QUERY), get_categorias, save_categoria, delete_categoria, get_indicadores, get_biblioteca_categorias |
+| [mcp-siag-query](./mcp-siag-query/) | ✅ | ⬜ | health, get_me, query (PERIOD/GRANULARITY/FILTER), drill (BY DIMENSION), navigate (DIMENSIONS), inspect (TABLES/INDICATORS/DIMENSIONS OF), guard read-only (DEFINE rechazado) |
 
 ## Infrastructure & DevOps
 
@@ -215,6 +222,6 @@ Leyenda: ✅ probado · ⬜ pendiente · — no aplica (Win64 only)
 
 | Plataforma | Probados | Total | % |
 |------------|:--------:|:-----:|:-:|
-| Win64 | 27 | 101 | 27% |
-| Linux64 | 26 | 89 | 29% |
+| Win64 | 29 | 103 | 28% |
+| Linux64 | 26 | 91 | 29% |
 

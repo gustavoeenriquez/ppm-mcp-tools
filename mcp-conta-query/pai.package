@@ -1,0 +1,7 @@
+name        = mcp-conta-query
+version     = 1.0.1
+type        = mcp
+description = Read-only access to the PascalAI accounting system (ConServer, Colombia): 25 domain tools, ~170 query/report operations (saldos, balances, libros, cartera, comprobantes, terceros, PUC, nomina, inventario). Write operations are hidden and rejected client-side, safe for autonomous agents. Auth via CONTA_* env vars. Windows and Linux. For writes use mcp-conta.
+author      = PascalAI
+tags        = contabilidad,accounting,colombia,erp,reportes,consultas,readonly,query,safe,agent,datasnap,linux
+entrypoint  = mcp-conta-query.exe

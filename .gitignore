@@ -12,6 +12,9 @@
 *.tvsconfig
 *.deployproj
 *.res
+*.otares
+*.log
+dcu/
 Win32/
 Win64/
 Linux64/
