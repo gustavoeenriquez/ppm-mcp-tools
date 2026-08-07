@@ -53,6 +53,7 @@ begin
       MCPServer := TAiMCPStdioServer.Create(nil);
 
     MCPServer.ServerName         := 'mcp-email';
+    MCPServer.ServerVersion      := '1.1.1';
     MCPServer.Port               := Port;
     MCPServer.CorsEnabled        := True;
     MCPServer.CorsAllowedOrigins := '*';
