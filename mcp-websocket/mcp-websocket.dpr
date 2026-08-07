@@ -32,7 +32,7 @@ begin
     else if SameText(Protocol, 'http') then MCPServer := TAiMCPHttpServer.Create(nil)
     else MCPServer := TAiMCPStdioServer.Create(nil);
     MCPServer.ServerName := 'mcp-websocket';
-    MCPServer.ServerVersion := '1.0.3';
+    MCPServer.ServerVersion := '1.0.4';
     MCPServer.Port := Port;
     MCPServer.CorsEnabled := True;
     MCPServer.CorsAllowedOrigins := '*';

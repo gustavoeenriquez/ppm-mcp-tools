@@ -45,7 +45,7 @@ begin
       MCPServer := TAiMCPStdioServer.Create(nil);
 
     MCPServer.ServerName         := 'mcp-fs';
-    MCPServer.ServerVersion := '1.0.5';
+    MCPServer.ServerVersion := '1.0.7';
     MCPServer.Port               := Port;
     MCPServer.CorsEnabled        := True;
     MCPServer.CorsAllowedOrigins := '*';

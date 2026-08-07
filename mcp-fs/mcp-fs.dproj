@@ -26,6 +26,10 @@
   <PropertyGroup Condition="'$(Base_Linux64)'!='' Or ('$(Base)'!='' And '$(Platform)'=='Linux64')">
     <Base_Linux64>true</Base_Linux64>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Base_Linux64)'!=''">
+    <DCC_ExeOutput>dist-linux-x64</DCC_ExeOutput>
+    <DCC_ConsoleTarget>true</DCC_ConsoleTarget>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Cfg_2)'!='' Or ('$(Base)'!='' And '$(Config)'=='Release')">
     <Cfg_2>true</Cfg_2>
     <DCC_DebugInformation>0</DCC_DebugInformation>

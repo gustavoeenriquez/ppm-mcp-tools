@@ -46,7 +46,7 @@ begin
       MCPServer := TAiMCPStdioServer.Create(nil);
 
     MCPServer.ServerName         := 'mcp-git';
-    MCPServer.ServerVersion := '1.0.8';
+    MCPServer.ServerVersion := '1.0.9';
     MCPServer.Port               := Port;
     MCPServer.CorsEnabled        := True;
     MCPServer.CorsAllowedOrigins := '*';
