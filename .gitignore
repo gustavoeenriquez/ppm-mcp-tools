@@ -15,6 +15,11 @@
 *.otares
 *.log
 dcu/
+# Salida de compilacion: los binarios se publican al registry, no al repo.
+# Estuvieron trackeados hasta 2026-08-07; se destrackearon porque cada
+# rebuild del lote metia ~1 GB de churn (la historia vieja los conserva).
+dist/
+dist-linux-x64/
 Win32/
 Win64/
 Linux64/
