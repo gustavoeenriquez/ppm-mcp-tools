@@ -53,6 +53,12 @@ begin
     MCPServer.CorsAllowedOrigins := '*';
 
     MCPTool.Conta.RegisterTools(MCPServer, { AReadOnly } True);
+
+    // En red, la credencial la pone el llamante en el header y este proceso
+    // solo la reenvia. En stdio se usan las CONTA_* del entorno.
+    if not SameText(Protocol, 'stdio') then
+      MCPTool.Conta.UsarCredencialDelHeader(MCPServer);
+
     MCPServer.Start;
 
     if MCPServer is TAiMCPSSEHttpServer then

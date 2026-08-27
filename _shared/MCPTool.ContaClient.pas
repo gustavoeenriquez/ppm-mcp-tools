@@ -21,6 +21,11 @@
       i.e. user = "login,nit" and password = the SHA-256 hex of the plain
       password. Stateless: no login endpoint, no token.
 
+  Credential:
+    - stdio  -> the CONTA_* environment variables below.
+    - http/sse -> the caller's Authorization header, relayed verbatim.
+    The model never supplies it: it is not a tool parameter.
+
   Configuration via environment variables:
     CONTA_URL              Base URL (default: https://conta.gustavoenriquez.com)
     CONTA_LOGIN            User login
@@ -43,17 +48,21 @@ type
 /// Base URL from CONTA_URL (no trailing slash).
 function ContaBaseUrl: string;
 
-/// Basic auth header value for the given credentials; APassword is plain
-/// unless AAlreadyHashed. Empty arguments fall back to the env vars.
-function ContaAuthValue(const ALogin, ANit, APassword: string;
-  AAlreadyHashed: Boolean = False): string;
+/// Basic auth header value built from the CONTA_* environment variables.
+/// Used only in stdio mode (one developer, one machine, own credentials).
+function ContaAuthValue: string;
 
 /// Invoke CON_<AMethod> with AParamsJson ('' = method without parameters).
-/// ALogin/ANit/APassword override the env credentials when all non-empty.
+///
+/// AAuthHeader, when not empty, is used VERBATIM as the Authorization header.
+/// That is the http/sse path: the MCP server relays the caller's credential
+/// without parsing, storing or logging it. Empty -> falls back to the env vars.
+///
+/// There is deliberately no way for the model to supply a credential: it is a
+/// transport concern, set by the runtime, invisible to the model.
 /// Returns the parsed payload (caller frees).
 function ContaCall(const AMethod, AParamsJson: string;
-  const ALogin: string = ''; const ANit: string = '';
-  const APassword: string = ''): TJSONValue;
+  const AAuthHeader: string = ''): TJSONValue;
 
 implementation
 
@@ -77,40 +86,28 @@ begin
     Delete(Result, Length(Result), 1);
 end;
 
-function ContaAuthValue(const ALogin, ANit, APassword: string;
-  AAlreadyHashed: Boolean): string;
+function ContaAuthValue: string;
 var
   Login, Nit, Hash: string;
 begin
-  Login := Trim(ALogin);
-  Nit   := Trim(ANit);
+  Login := Trim(GetEnvironmentVariable('CONTA_LOGIN'));
+  Nit   := Trim(GetEnvironmentVariable('CONTA_NIT'));
+  Hash  := LowerCase(Trim(GetEnvironmentVariable('CONTA_PASSWORD_SHA256')));
 
-  if (Login <> '') and (Nit <> '') and (APassword <> '') then
+  if Hash = '' then
   begin
-    if AAlreadyHashed then
-      Hash := LowerCase(Trim(APassword))
-    else
-      Hash := LowerCase(THashSHA2.GetHashString(APassword, THashSHA2.TSHA2Version.SHA256));
-  end
-  else
-  begin
-    Login := Trim(GetEnvironmentVariable('CONTA_LOGIN'));
-    Nit   := Trim(GetEnvironmentVariable('CONTA_NIT'));
-    Hash  := LowerCase(Trim(GetEnvironmentVariable('CONTA_PASSWORD_SHA256')));
-    if Hash = '' then
-    begin
-      if GetEnvironmentVariable('CONTA_PASSWORD') = '' then
-        raise EContaError.Create(
-          'Missing credentials: set CONTA_LOGIN, CONTA_NIT and CONTA_PASSWORD ' +
-          '(or CONTA_PASSWORD_SHA256) environment variables, or pass ' +
-          'login+nit+password in the tool call.');
-      Hash := LowerCase(THashSHA2.GetHashString(
-        GetEnvironmentVariable('CONTA_PASSWORD'), THashSHA2.TSHA2Version.SHA256));
-    end;
-    if (Login = '') or (Nit = '') then
+    if GetEnvironmentVariable('CONTA_PASSWORD') = '' then
       raise EContaError.Create(
-        'Missing credentials: set CONTA_LOGIN and CONTA_NIT environment variables.');
+        'Missing credentials. In stdio mode set CONTA_LOGIN, CONTA_NIT and ' +
+        'CONTA_PASSWORD (or CONTA_PASSWORD_SHA256). In http/sse mode the ' +
+        'caller must send an Authorization header.');
+    Hash := LowerCase(THashSHA2.GetHashString(
+      GetEnvironmentVariable('CONTA_PASSWORD'), THashSHA2.TSHA2Version.SHA256));
   end;
+
+  if (Login = '') or (Nit = '') then
+    raise EContaError.Create(
+      'Missing credentials: set CONTA_LOGIN and CONTA_NIT environment variables.');
 
   Result := 'Basic ' + TNetEncoding.Base64.Encode(Login + ',' + Nit + ':' + Hash)
     .Replace(#13, '').Replace(#10, '');
@@ -151,8 +148,7 @@ begin
   end;
 end;
 
-function ContaCall(const AMethod, AParamsJson, ALogin, ANit,
-  APassword: string): TJSONValue;
+function ContaCall(const AMethod, AParamsJson, AAuthHeader: string): TJSONValue;
 var
   HTTP:   THTTPClient;
   Stream: TStringStream;
@@ -161,7 +157,12 @@ var
   Body:   TJSONObject;
   Params: TJSONArray;
 begin
-  Auth := ContaAuthValue(ALogin, ANit, APassword);
+  // El header del llamante gana. El MCP no lo interpreta ni lo guarda: lo
+  // reenvia tal cual, porque el formato que espera ConServer es el mismo.
+  if Trim(AAuthHeader) <> '' then
+    Auth := Trim(AAuthHeader)
+  else
+    Auth := ContaAuthValue;
   Url  := ContaBaseUrl + DS_PATH + AMethod;
   if Trim(AParamsJson) <> '' then
     Url := Url + '/' + TNetEncoding.URL.Encode(Trim(AParamsJson));
@@ -198,9 +199,12 @@ begin
       end;
     end;
 
-    if Resp.StatusCode = 401 then
-      raise EContaError.Create('ConServer: credenciales invalidas (HTTP 401). ' +
-        'Verifique CONTA_LOGIN / CONTA_NIT / CONTA_PASSWORD.');
+    if (Resp.StatusCode = 401) or (Resp.StatusCode = 403) then
+      raise EContaError.CreateFmt(
+        'ConServer rechazo la credencial (HTTP %d). En stdio revise ' +
+        'CONTA_LOGIN / CONTA_NIT / CONTA_PASSWORD; en http/sse el token ' +
+        'puede estar vencido, revocado o sin alcance para esta operacion.',
+        [Resp.StatusCode]);
     if (Resp.StatusCode >= 400) and (Trim(Raw) = '') then
       raise EContaError.CreateFmt('ConServer %s failed: HTTP %d',
         [AMethod, Resp.StatusCode]);
