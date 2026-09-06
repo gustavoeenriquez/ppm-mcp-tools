@@ -42,6 +42,7 @@ type
   private
     FOperation: string;
     FParams:    string;
+    FNit:       string;
   public
     [AiMCPSchemaDescription('Operation to execute (see the list in the tool ' +
       'description). Use "help" to get every operation of this module with ' +
@@ -54,6 +55,15 @@ type
       'Omit for operations without parameters. Use operation:"help" to see ' +
       'the params of each operation.')]
     property Params: string read FParams write FParams;
+
+    [AiMCPOptional]
+    [AiMCPSchemaDescription('Company (nit_empresa / tenant) to operate on. ' +
+      'Omit to use the one configured in CONTA_NIT. Use it when the ' +
+      'installation keeps books for more than one company: it is a scope ' +
+      'selector, not a credential — the server only accepts a company where ' +
+      'the configured user actually has an account. List them with ' +
+      'conta_sistema operation:"GetMisEmpresas".')]
+    property Nit: string read FNit write FNit;
   end;
 
   // Aloja el manejador del evento de validacion (es 'of object').
@@ -162,10 +172,33 @@ begin
   Root.Free;
 end;
 
+// Valida el nit que manda el MODELO. Va dentro del usuario de Basic
+// ("login,nit"), que el servidor parte por comas: una coma en el valor
+// desplazaria el troceo y se autenticaria contra otra cosa. Se restringe al
+// juego de caracteres de la columna (VARCHAR(20)) en vez de confiar.
+function NitValido(const ANit: string): Boolean;
+var
+  i: Integer;
+begin
+  Result := (ANit <> '') and (Length(ANit) <= 20);
+  if not Result then Exit;
+  for i := 1 to Length(ANit) do
+    if not (CharInSet(ANit[i], ['0'..'9', 'A'..'Z', 'a'..'z', '-', '.', '_'])) then
+      Exit(False);
+end;
+
+function EstrictoPorEmpresa: Boolean;
+var
+  V: string;
+begin
+  V := LowerCase(Trim(GetEnvironmentVariable('CONTA_NIT_STRICT')));
+  Result := (V = '1') or (V = 'true') or (V = 'yes') or (V = 'si');
+end;
+
 function TContaModuleTool.ExecuteWithParams(const AParams: TContaParams;
   const AuthContext: TAiAuthContext): TJSONObject;
 var
-  Op, PJson: string;
+  Op, PJson, Nit: string;
   i, Found: Integer;
   R: TJSONValue;
 begin
@@ -206,10 +239,30 @@ begin
       FreeAndNil(R);
     end;
 
+    // Empresa sobre la que operar. Es alcance, no credencial: el servidor
+    // exige una cuenta del usuario en ESE tenant, asi que un nit ajeno da 401.
+    Nit := Trim(AParams.Nit);
+    if (Nit <> '') and not NitValido(Nit) then
+      raise EContaError.CreateFmt(
+        '"nit" invalido: "%s". Debe ser el nit_empresa tal como lo devuelve ' +
+        'GetMisEmpresas (hasta 20 caracteres, sin comas ni espacios).', [Nit]);
+
+    // Modo estricto: con varias empresas configuradas, una escritura SIN decir
+    // en cual se hace es el error caro — queda contabilizada en la empresa por
+    // defecto y nadie se entera hasta el cierre. Obligar a nombrarla tiene el
+    // efecto util de que el nit aparece en los argumentos, que es lo que el
+    // usuario ve en la pantalla de aprobacion antes de autorizar.
+    if EstrictoPorEmpresa and (Nit = '') and FModule.Methods[Found].IsWrite then
+      raise EContaError.CreateFmt(
+        'Esta instalacion lleva varias empresas: "%s" modifica datos y hay ' +
+        'que indicar en cual con el argumento "nit". Consulte las disponibles ' +
+        'con conta_sistema operation:"GetMisEmpresas".',
+        [FModule.Methods[Found].Name]);
+
     // La credencial viene del transporte (AuthContext), nunca de AParams.
     // En stdio AuthContext.UserID llega vacio y ContaCall cae a las CONTA_*.
     R := ContaCall('CON_' + FModule.Methods[Found].Name, PJson,
-      AuthContext.UserID);
+      AuthContext.UserID, Nit);
 
     Result := TAiMCPResponseBuilder.New.AddText(R.ToJSON).Build;
     FreeAndNil(R);

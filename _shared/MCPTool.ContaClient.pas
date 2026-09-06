@@ -26,6 +26,17 @@
     - http/sse -> the caller's Authorization header, relayed verbatim.
     The model never supplies it: it is not a tool parameter.
 
+  Tenant (nit_empresa) vs credential — no son lo mismo:
+    El nit viaja DENTRO del usuario de Basic ("login,nit"), asi que a primera
+    vista parece credencial. No lo es: es un SELECTOR DE ALCANCE. ConServer
+    autentica exigiendo una fila de con_usuarios con ese nit_empresa exacto
+    (DSAuthenticationManager1UserAuthenticate), cuya PK es (nit_empresa, login).
+    Pedir otro nit solo funciona si el usuario TIENE cuenta en ese tenant; con
+    cualquier otro la peticion vuelve 401. Por eso ANitOverride si puede venir
+    del modelo — hace falta para llevar dos empresas — mientras el login y la
+    contrasena siguen siendo cosa del transporte: una clave en un argumento de
+    tool acabaria en la conversacion, en la sesion en disco y en el historial.
+
   Configuration via environment variables:
     CONTA_URL              Base URL (default: https://conta.gustavoenriquez.com)
     CONTA_LOGIN            User login
@@ -50,7 +61,11 @@ function ContaBaseUrl: string;
 
 /// Basic auth header value built from the CONTA_* environment variables.
 /// Used only in stdio mode (one developer, one machine, own credentials).
-function ContaAuthValue: string;
+///
+/// ANitOverride, cuando no esta vacio, reemplaza a CONTA_NIT: es como se
+/// trabajan varias empresas con una sola credencial. El login y el hash NO se
+/// pueden sustituir por aqui a proposito (ver la nota del encabezado).
+function ContaAuthValue(const ANitOverride: string = ''): string;
 
 /// Invoke CON_<AMethod> with AParamsJson ('' = method without parameters).
 ///
@@ -60,9 +75,14 @@ function ContaAuthValue: string;
 ///
 /// There is deliberately no way for the model to supply a credential: it is a
 /// transport concern, set by the runtime, invisible to the model.
+///
+/// ANitOverride si puede venir del modelo (empresa sobre la que operar) y solo
+/// tiene efecto en el camino stdio: si llega un AAuthHeader, ese header manda
+/// entero — el nit ya viene dentro y reescribirlo seria alterar la credencial
+/// del llamante.
 /// Returns the parsed payload (caller frees).
 function ContaCall(const AMethod, AParamsJson: string;
-  const AAuthHeader: string = ''): TJSONValue;
+  const AAuthHeader: string = ''; const ANitOverride: string = ''): TJSONValue;
 
 implementation
 
@@ -86,12 +106,14 @@ begin
     Delete(Result, Length(Result), 1);
 end;
 
-function ContaAuthValue: string;
+function ContaAuthValue(const ANitOverride: string): string;
 var
   Login, Nit, Hash: string;
 begin
   Login := Trim(GetEnvironmentVariable('CONTA_LOGIN'));
-  Nit   := Trim(GetEnvironmentVariable('CONTA_NIT'));
+  Nit   := Trim(ANitOverride);
+  if Nit = '' then
+    Nit := Trim(GetEnvironmentVariable('CONTA_NIT'));
   Hash  := LowerCase(Trim(GetEnvironmentVariable('CONTA_PASSWORD_SHA256')));
 
   if Hash = '' then
@@ -107,7 +129,9 @@ begin
 
   if (Login = '') or (Nit = '') then
     raise EContaError.Create(
-      'Missing credentials: set CONTA_LOGIN and CONTA_NIT environment variables.');
+      'Missing credentials: set CONTA_LOGIN and CONTA_NIT environment ' +
+      'variables (CONTA_NIT can be replaced per call with the "nit" argument, ' +
+      'but the login always comes from the environment).');
 
   Result := 'Basic ' + TNetEncoding.Base64.Encode(Login + ',' + Nit + ':' + Hash)
     .Replace(#13, '').Replace(#10, '');
@@ -148,7 +172,8 @@ begin
   end;
 end;
 
-function ContaCall(const AMethod, AParamsJson, AAuthHeader: string): TJSONValue;
+function ContaCall(const AMethod, AParamsJson, AAuthHeader,
+  ANitOverride: string): TJSONValue;
 var
   HTTP:   THTTPClient;
   Stream: TStringStream;
@@ -159,10 +184,12 @@ var
 begin
   // El header del llamante gana. El MCP no lo interpreta ni lo guarda: lo
   // reenvia tal cual, porque el formato que espera ConServer es el mismo.
+  // Ahi el nit ya viaja dentro del header, asi que ANitOverride se ignora: no
+  // se reescribe la credencial de nadie.
   if Trim(AAuthHeader) <> '' then
     Auth := Trim(AAuthHeader)
   else
-    Auth := ContaAuthValue;
+    Auth := ContaAuthValue(ANitOverride);
   Url  := ContaBaseUrl + DS_PATH + AMethod;
   if Trim(AParamsJson) <> '' then
     Url := Url + '/' + TNetEncoding.URL.Encode(Trim(AParamsJson));

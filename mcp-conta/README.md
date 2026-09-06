@@ -15,10 +15,14 @@ Shared pieces:
 
 - `_shared/MCPTool.ContaClient.pas` — HTTP client (Basic auth, DataSnap
   envelope, GET with POST fallback for large payloads).
-- `mcp-conta/MCPTool.Conta.Catalog.pas` — **generated** catalog: 337 public
+- `mcp-conta/MCPTool.Conta.Catalog.pas` — **generated** catalog: 338 public
   methods of `uConServerMethods.pas` grouped into 25 domain modules.
   Regenerate with `gen_catalog_pas.py` (extract via `extract_catalog.py`)
-  whenever the server adds methods.
+  whenever the server adds methods. NOTE: those two scripts are no longer in
+  the repo (2026-09-06); until they are recovered, a new method has to be added
+  to the catalog by hand — the doc string is the interface comment of
+  `uConServerMethods.pas` verbatim, and that comment IS what the model reads in
+  `operation:"help"`, so a stale comment is worse than none.
 - `mcp-conta/MCPTool.Conta.pas` — one generic tool class instantiated per
   module; the read-only flag hides/rejects write operations client-side.
 

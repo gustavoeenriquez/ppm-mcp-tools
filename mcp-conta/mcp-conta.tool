@@ -10,9 +10,12 @@
     { "key": "CONTA_LOGIN", "label": "Usuario", "required": true,
       "help": "Login del usuario en el sistema contable" },
     { "key": "CONTA_NIT", "label": "NIT de la empresa", "required": true,
-      "help": "NIT de la empresa (sin digito de verificacion) sobre la que trabajara el asistente" },
+      "help": "NIT de la empresa (sin digito de verificacion) sobre la que trabajara el asistente por omision. Si llevas varias empresas, el asistente puede cambiar por llamada con el argumento nit" },
     { "key": "CONTA_PASSWORD", "label": "Contrasena", "secret": true, "required": true,
-      "help": "Contrasena del usuario; se guarda cifrada en tu equipo y nunca pasa por el chat" }
+      "help": "Contrasena del usuario; se guarda cifrada en tu equipo y nunca pasa por el chat" },
+    { "key": "CONTA_NIT_STRICT", "label": "Exigir empresa en cada escritura",
+      "default": "0",
+      "help": "Ponlo en 1 si llevas mas de una empresa: entonces toda operacion que modifique datos debe indicar el nit, para que no se contabilice en la empresa equivocada por omision" }
   ],
   "inputSchema": {
     "type": "object",
@@ -25,17 +28,9 @@
         "type": "string",
         "description": "JSON object with the parameters of the operation, e.g. {\"fecha_desde\":\"2026-01-01\",\"fecha_hasta\":\"2026-01-31\"}. Omit for operations without parameters. Dates ISO yyyy-mm-dd; lists usually paginate with page/page_size."
       },
-      "login": {
-        "type": "string",
-        "description": "Override credentials: user login (else CONTA_LOGIN)"
-      },
       "nit": {
         "type": "string",
-        "description": "Override credentials: company NIT / tenant (else CONTA_NIT)"
-      },
-      "password": {
-        "type": "string",
-        "description": "Override credentials: plain password (else CONTA_PASSWORD)"
+        "description": "Company (nit_empresa / tenant) to operate on. Omit to use CONTA_NIT. It is a scope selector, NOT a credential: the server only accepts a company where the configured user actually has an account, so a foreign NIT gets a 401. List the available ones with conta_sistema operation:\"GetMisEmpresas\". With CONTA_NIT_STRICT=1 it is mandatory on every write operation."
       }
     },
     "required": ["operation"]
@@ -45,7 +40,8 @@
     "CONTA_LOGIN": "User login (required)",
     "CONTA_NIT": "Company NIT / tenant (required)",
     "CONTA_PASSWORD": "Plain password, hashed in-process with SHA-256 (required unless CONTA_PASSWORD_SHA256)",
-    "CONTA_PASSWORD_SHA256": "Pre-hashed password, takes precedence over CONTA_PASSWORD"
+    "CONTA_PASSWORD_SHA256": "Pre-hashed password, takes precedence over CONTA_PASSWORD",
+    "CONTA_NIT_STRICT": "1/true = every write operation must carry an explicit \"nit\" argument (multi-company installs). Default off"
   },
   "examples": [
     {

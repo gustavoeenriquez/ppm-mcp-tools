@@ -55,13 +55,14 @@ begin
     M('GetNotificaciones', 'Retorna alertas activas: nóminas borrador, provisiones pendientes, períodos sin cerrar, comprobantes borrador recientes', False)
   ];
 
-  // Empresa y configuracion (17 ops)
+  // Empresa y configuracion (18 ops)
   GModules[1].Tool := 'conta_empresa';
   GModules[1].Title := 'Empresa y configuracion';
-  GModules[1].Desc := 'Datos de la empresa, usuarios y permisos, configuracion de cuentas contables por defecto y configuracion de email/notificaciones';
+  GModules[1].Desc := 'Datos de la empresa, creacion de empresas nuevas (tenants), usuarios y permisos, configuracion de cuentas contables por defecto y configuracion de email/notificaciones';
   GModules[1].Methods := [
     M('GetEmpresa', 'Retorna configuración de la empresa del tenant en sesión', False),
-    M('SaveEmpresa', 'Crea o actualiza empresa Params: { nit_empresa, razon_social, pais_codigo, moneda_codigo, grupo_niif, decimales, anio_fiscal_mes }', True),
+    M('SaveEmpresa', 'Actualiza la empresa del tenant en sesion. NO crea empresas: el nit_empresa del payload se IGNORA (un admin solo modifica la suya). Para crear una empresa nueva use CrearEmpresa. Params: { razon_social, pais_codigo, moneda_codigo, grupo_niif, decimales, anio_fiscal_mes } - los ausentes no se tocan', True),
+    M('CrearEmpresa', 'Crea una empresa (tenant) NUEVA y su usuario administrador inicial. Falla si el nit_empresa ya existe: para modificar use SaveEmpresa. Requiere perfil ADMIN y que el NIT en sesion este habilitado para crear empresas (variable de entorno CON_TENANT_ADMIN_NITS del servidor). Si no se indica admin_login se replica el usuario que hace la llamada (mismo login y contrasena), de modo que quede acceso inmediato. Con sembrar=true (default) importa el PUC maestro del pais, los tipos de comprobante y la configuracion de cuentas por concepto. Params: { nit_empresa, razon_social, pais_codigo, moneda_codigo?, grupo_niif?, decimales?, anio_fiscal_mes?, sembrar?, admin_login?, admin_nombre?, admin_email?, admin_password? } admin_password es SHA-256 hex', True),
     M('GetUsuarios', 'Lista usuarios de la empresa (sin password). Solo ADMIN.', False),
     M('SaveUsuario', 'Crea o actualiza usuario. Solo ADMIN. Params: { login, nombre, email, perfil, activo, password? } password es SHA-256 hex; opcional en edición (si vacío no se cambia)', True),
     M('ChangePassword', 'Cambia la contraseña del usuario en sesión Params: { password_actual, password_nueva } — ambos SHA-256 hex', False),
