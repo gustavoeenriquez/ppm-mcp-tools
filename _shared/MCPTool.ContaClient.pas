@@ -192,7 +192,13 @@ begin
     Auth := ContaAuthValue(ANitOverride);
   Url  := ContaBaseUrl + DS_PATH + AMethod;
   if Trim(AParamsJson) <> '' then
-    Url := Url + '/' + TNetEncoding.URL.Encode(Trim(AParamsJson));
+    // TNetEncoding.URL.Encode es form-encoding: codifica el espacio como '+',
+    // y DataSnap NO lo decodifica en el path, asi que los espacios llegaban
+    // como '+' literales a la base (visto en descripciones de comprobantes).
+    // Un '+' real del texto sale como %2B, asi que este replace solo toca
+    // los espacios. Con esto queda igual que encodeURIComponent del navegador.
+    Url := Url + '/' + TNetEncoding.URL.Encode(Trim(AParamsJson))
+                         .Replace('+', '%20', [rfReplaceAll]);
 
   HTTP := THTTPClient.Create;
   try
