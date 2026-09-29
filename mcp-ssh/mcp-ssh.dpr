@@ -31,7 +31,7 @@ begin
     else if SameText(Protocol, 'http') then MCPServer := TAiMCPHttpServer.Create(nil)
     else MCPServer := TAiMCPStdioServer.Create(nil);
     MCPServer.ServerName := 'mcp-ssh';
-    MCPServer.ServerVersion := '1.2.10';
+    MCPServer.ServerVersion := '1.2.12';
     MCPServer.Port := Port;
     MCPServer.CorsEnabled := True;
     MCPServer.CorsAllowedOrigins := '*';

@@ -116,8 +116,11 @@ type
                                   user: PAnsiChar; user_len: NativeUInt;
                                   pass: PAnsiChar; pass_len: NativeUInt;
                                   cb: Pointer): Integer; cdecl;
+    // Firma de libssh2_userauth_publickey_fromfile_ex: lleva username_len.
+    // Sin él, el puntero de pubkey caía en username_len y el usuario iba vacío.
     type TL_AuthPubkey        = function(session: Pointer;
-                                  user, pubkey, privkey, passphrase: PAnsiChar): Integer; cdecl;
+                                  user: PAnsiChar; user_len: Cardinal;
+                                  pubkey, privkey, passphrase: PAnsiChar): Integer; cdecl;
     type TL_ChannelOpen       = function(session: Pointer;
                                   chan_type: PAnsiChar; type_len: Cardinal;
                                   window_size, packet_size: Cardinal;
@@ -611,7 +614,7 @@ begin
   begin
     KeyF := UTF8Encode(AKeyFile);
     PP   := UTF8Encode(APassphrase);
-    if ssh2_auth_pubkey(FSession, PAnsiChar(User), nil,
+    if ssh2_auth_pubkey(FSession, PAnsiChar(User), Length(User), nil,
                         PAnsiChar(KeyF), PAnsiChar(PP)) <> 0 then
       raise Exception.Create('SSH public-key authentication failed');
   end
