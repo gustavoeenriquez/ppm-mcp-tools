@@ -172,6 +172,31 @@ begin
   end;
 end;
 
+// "Basic base64(login,nit:hash)" con el nit cambiado por ANit. Cualquier cosa
+// que no tenga esa forma (otro esquema, base64 roto) se devuelve intacta.
+function HeaderConNit(const AHeader, ANit: string): string;
+var
+  Plain, UserPart, Rest: string;
+  PColon, PComma: Integer;
+begin
+  Result := AHeader;
+  if (ANit = '') or not AHeader.StartsWith('Basic ', True) then Exit;
+  try
+    Plain := TNetEncoding.Base64.Decode(Trim(Copy(AHeader, 7, MaxInt)));
+  except
+    Exit;
+  end;
+  PColon := Pos(':', Plain);
+  if PColon = 0 then Exit;
+  UserPart := Copy(Plain, 1, PColon - 1);
+  Rest     := Copy(Plain, PColon + 1, MaxInt);
+  PComma   := Pos(',', UserPart);
+  if PComma = 0 then Exit;
+  Result := 'Basic ' + TNetEncoding.Base64.Encode(
+    Copy(UserPart, 1, PComma - 1) + ',' + ANit + ':' + Rest)
+    .Replace(#13, '').Replace(#10, '');
+end;
+
 function ContaCall(const AMethod, AParamsJson, AAuthHeader,
   ANitOverride: string): TJSONValue;
 var
@@ -182,12 +207,15 @@ var
   Body:   TJSONObject;
   Params: TJSONArray;
 begin
-  // El header del llamante gana. El MCP no lo interpreta ni lo guarda: lo
-  // reenvia tal cual, porque el formato que espera ConServer es el mismo.
-  // Ahi el nit ya viaja dentro del header, asi que ANitOverride se ignora: no
-  // se reescribe la credencial de nadie.
+  // El header del llamante gana. El MCP no lo guarda: lo reenvia, porque el
+  // formato que espera ConServer es el mismo. Si el modelo pide OTRA empresa
+  // (ANitOverride) y el header es el Basic "login,nit:hash", se cambia solo el
+  // nit: es selector de alcance, no credencial (ver arriba) — ConServer
+  // rechaza con 401 un nit donde ese login no tiene cuenta. Login y hash no se
+  // tocan. Asi un broker con credencial por usuario (MKAIServer, conexiones)
+  // tambien puede llevar varias empresas, como el modo stdio.
   if Trim(AAuthHeader) <> '' then
-    Auth := Trim(AAuthHeader)
+    Auth := HeaderConNit(Trim(AAuthHeader), Trim(ANitOverride))
   else
     Auth := ContaAuthValue(ANitOverride);
   Url  := ContaBaseUrl + DS_PATH + AMethod;
