@@ -266,6 +266,11 @@ begin
     if Op = 'me' then
     begin
       var Me := Bot.API.getMe;
+      if (Me = nil) or (Me.Id = 0) then
+      begin
+        Me.Free;
+        raise Exception.Create('Telegram rechazo el token del bot: revisalo en Conexiones.');
+      end;
       try
         R := TJSONObject.Create;
         R.AddPair('id',         TJSONNumber.Create(Me.Id));
@@ -548,6 +553,13 @@ begin
         [Op]);
 
   except
+    // fastTelega devuelve nil cuando Telegram rechaza la llamada (token
+    // invalido, bot bloqueado): usarlo revienta con un access violation.
+    on E: EAccessViolation do
+      Result := TAiMCPResponseBuilder.New
+        .AddText('Error [mcp-telegram]: Telegram rechazo la llamada. Revisa que el ' +
+                 'token del bot sea correcto (Conexiones) y que el chat exista.')
+        .Build;
     on E: Exception do
       Result := TAiMCPResponseBuilder.New
         .AddText('Error [mcp-telegram]: ' + E.Message)

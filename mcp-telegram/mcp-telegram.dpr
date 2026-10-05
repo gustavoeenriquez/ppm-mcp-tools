@@ -46,7 +46,7 @@ begin
       MCPServer := TAiMCPStdioServer.Create(nil);
 
     MCPServer.ServerName       := 'mcp-telegram';
-    MCPServer.ServerVersion := '1.5.0';
+    MCPServer.ServerVersion := '1.5.1';
     MCPServer.Port             := Port;
     MCPServer.CorsEnabled      := True;
     MCPServer.CorsAllowedOrigins := '*';
