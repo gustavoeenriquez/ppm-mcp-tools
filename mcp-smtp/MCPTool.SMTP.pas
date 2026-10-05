@@ -32,7 +32,9 @@ uses
   IdText,
   IdAttachmentFile,
   TaurusTLS,
-  IdExplicitTLSClientServerBase;
+  IdExplicitTLSClientServerBase,
+  MCPTool.Credential,       // modo servidor: cuenta por cabecera
+  MCPTool.MailAutoconfig;   // servidores a partir de la direccion
 
 type
 
@@ -128,16 +130,60 @@ var
   SSL:  TTaurusTLSIOHandlerSocket;
 begin
   try
-    // Fallback a variables de entorno (conector MakerCLI u otro host MCP):
-    // la credencial se inyecta al proceso y nunca pasa por el LLM.
-    if AParams.Host     = '' then AParams.Host     := GetEnvironmentVariable('MAIL_SMTP_HOST');
-    if AParams.Username = '' then AParams.Username := GetEnvironmentVariable('MAIL_USER');
-    if AParams.Password = '' then AParams.Password := GetEnvironmentVariable('MAIL_PASS');
-    if AParams.Port     = 0  then AParams.Port     := StrToIntDef(GetEnvironmentVariable('MAIL_SMTP_PORT'), 0);
-    if AParams.SSL      = '' then AParams.SSL      := GetEnvironmentVariable('MAIL_SMTP_SSL');
-    if AParams.From     = '' then AParams.From     := GetEnvironmentVariable('MAIL_FROM');
-    if AParams.From     = '' then AParams.From     := GetEnvironmentVariable('MAIL_USER');
-    if AParams.FromName = '' then AParams.FromName := GetEnvironmentVariable('MAIL_FROM_NAME');
+    if ServerMode then
+    begin
+      // Proceso compartido en un servidor (MCPTool.Credential): solo vale la
+      // cuenta conectada; servidor, remitente y clave NO los elige el modelo.
+      AParams.Username := Cred(AuthContext, 'MAIL_USER');
+      AParams.Password := Cred(AuthContext, 'MAIL_PASS');
+      AParams.Host     := Cred(AuthContext, 'MAIL_SMTP_HOST');
+      AParams.Port     := StrToIntDef(Cred(AuthContext, 'MAIL_SMTP_PORT'), 0);
+      AParams.SSL      := Cred(AuthContext, 'MAIL_SMTP_SSL');
+      AParams.From     := AParams.Username;
+      var FromName := Cred(AuthContext, 'MAIL_FROM_NAME');
+      if FromName <> '' then AParams.FromName := FromName;
+      if AParams.Username = '' then
+        raise Exception.Create('La cuenta de correo conectada no tiene direccion.');
+      if AParams.Host = '' then
+      begin
+        var AcImap, AcSmtp: TMailEndpoint;
+        var Src: string;
+        AutoconfigMail(AParams.Username, AcImap, AcSmtp, Src);
+        AParams.Host := AcSmtp.Host;
+        if AParams.Port = 0 then AParams.Port := AcSmtp.Port;
+        if AParams.SSL = '' then AParams.SSL := AcSmtp.SSL;
+      end;
+      // Solo envio autenticado y cifrado: el 25 sin autenticar convertiria el
+      // servidor en un relevo de spam con nuestra IP.
+      if (AParams.Port <> 0) and (AParams.Port <> 465) and (AParams.Port <> 587) then
+        raise Exception.Create('Puerto SMTP no permitido (465 o 587).');
+      if SameText(Trim(AParams.SSL), 'none') then
+        raise Exception.Create('El envio debe ir cifrado (ssl o starttls).');
+      // Leer ficheros del servidor para adjuntarlos seria una fuga de datos.
+      if Trim(AParams.Attachments) <> '' then
+        raise Exception.Create('En este servidor no se pueden adjuntar archivos ' +
+          'desde rutas; envia el correo sin adjuntos.');
+      var NRcpt := 0;
+      var Lists: TArray<string> := [AParams.Recipients, AParams.CC, AParams.BCC];
+      for var L in Lists do
+        for var A in L.Split([',', ';']) do
+          if Trim(A) <> '' then Inc(NRcpt);
+      if NRcpt > 20 then
+        raise Exception.Create('Demasiados destinatarios (maximo 20 por correo).');
+    end
+    else
+    begin
+      // Fallback a variables de entorno (conector MakerCLI u otro host MCP):
+      // la credencial se inyecta al proceso y nunca pasa por el LLM.
+      if AParams.Host     = '' then AParams.Host     := GetEnvironmentVariable('MAIL_SMTP_HOST');
+      if AParams.Username = '' then AParams.Username := GetEnvironmentVariable('MAIL_USER');
+      if AParams.Password = '' then AParams.Password := GetEnvironmentVariable('MAIL_PASS');
+      if AParams.Port     = 0  then AParams.Port     := StrToIntDef(GetEnvironmentVariable('MAIL_SMTP_PORT'), 0);
+      if AParams.SSL      = '' then AParams.SSL      := GetEnvironmentVariable('MAIL_SMTP_SSL');
+      if AParams.From     = '' then AParams.From     := GetEnvironmentVariable('MAIL_FROM');
+      if AParams.From     = '' then AParams.From     := GetEnvironmentVariable('MAIL_USER');
+      if AParams.FromName = '' then AParams.FromName := GetEnvironmentVariable('MAIL_FROM_NAME');
+    end;
 
     if AParams.Host       = '' then raise Exception.Create('"host" is required (or configure MAIL_SMTP_HOST)');
     if AParams.From       = '' then raise Exception.Create('"from" is required (or configure MAIL_FROM / MAIL_USER)');
@@ -220,7 +266,12 @@ begin
       end;
 
       // Connect + Send — sin Authenticate separado (mismo patrón que contabilidad)
-      SMTP.Connect;
+      try
+        SMTP.Connect;
+      except
+        on E: Exception do
+          raise Exception.Create(MailLoginHint(AParams.Host, E.Message));
+      end;
       try
         SMTP.Send(Msg);
       finally

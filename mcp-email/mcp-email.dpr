@@ -15,6 +15,8 @@ uses
   UMakerAi.MCPServer.Stdio,
   UMakerAi.MCPServer.Http,
   UMakerAi.MCPServer.SSE,
+  MCPTool.Credential in '..\_shared\MCPTool.Credential.pas',
+  MCPTool.MailAutoconfig in '..\_shared\MCPTool.MailAutoconfig.pas',
   MCPTool.IMAP in '..\mcp-imap\MCPTool.IMAP.pas',
   MCPTool.SMTP in '..\mcp-smtp\MCPTool.SMTP.pas';
 
@@ -53,13 +55,17 @@ begin
       MCPServer := TAiMCPStdioServer.Create(nil);
 
     MCPServer.ServerName         := 'mcp-email';
-    MCPServer.ServerVersion      := '1.1.1';
+    MCPServer.ServerVersion      := '1.2.0';
     MCPServer.Port               := Port;
     MCPServer.CorsEnabled        := True;
     MCPServer.CorsAllowedOrigins := '*';
 
     MCPTool.IMAP.RegisterTools(MCPServer);
     MCPTool.SMTP.RegisterTools(MCPServer);
+    // En red (servidor) la cuenta llega por cabecera en cada peticion
+    // (MCPTool.Credential); en stdio, de las variables de entorno.
+    if not SameText(Protocol, 'stdio') then
+      MCPTool.Credential.UseHeaderCredential(MCPServer);
     MCPServer.Start;
 
     if MCPServer is TAiMCPSSEHttpServer then

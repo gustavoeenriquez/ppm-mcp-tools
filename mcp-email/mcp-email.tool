@@ -1,7 +1,7 @@
 {
   "name": "mcp-email",
   "description": "Correo completo en un solo conector: lee y gestiona el buzón por IMAP (carpetas, listar, buscar, leer, descargar adjuntos, mover, borrar, marcar) y envía por SMTP (texto, HTML, CC/BCC, adjuntos). Compatible con Gmail (contraseña de aplicación), Outlook, Zoho y cualquier proveedor IMAP/SMTP estándar.",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "category": "communication",
   "config": [
     { "key": "MAIL_USER", "label": "Correo (usuario)", "required": true,

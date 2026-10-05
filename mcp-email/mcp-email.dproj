@@ -70,6 +70,8 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
+        <DCCReference Include="..\_shared\MCPTool.Credential.pas"/>
+        <DCCReference Include="..\_shared\MCPTool.MailAutoconfig.pas"/>
         <DCCReference Include="..\mcp-imap\MCPTool.IMAP.pas"/>
         <DCCReference Include="..\mcp-smtp\MCPTool.SMTP.pas"/>
         <BuildConfiguration Include="Release">

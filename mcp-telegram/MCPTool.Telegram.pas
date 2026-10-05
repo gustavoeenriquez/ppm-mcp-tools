@@ -45,6 +45,9 @@ uses
   System.JSON,
   System.Classes,
   System.IOUtils,
+  System.SyncObjs,
+  System.Generics.Collections,
+  MCPTool.Credential,   // modo servidor: el token llega por cabecera
   fastTelega.Bot,
   fastTelega.API,
   fastTelega.AvailableTypes;
@@ -145,11 +148,18 @@ implementation
 var
   GBotToken: string  = '';
   GBot:      TftBot  = nil;
+  // Modo servidor: un bot por token (varios usuarios, cada uno con el suyo).
+  // Tampoco se liberan (ver arriba); el tope evita crecer sin limite.
+  GBots:     TDictionary<string, TftBot> = nil;
+  // Las llamadas se serializan en modo servidor: TftBot no es seguro entre
+  // hilos y dos usuarios pueden llamar a la vez.
+  GBotLock:  TCriticalSection = nil;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function TTelegramTool.ResolveToken(const Param: string): string;
 begin
+  // En modo servidor el token lo pone ExecuteWithParams desde la cabecera
   Result := Trim(Param);
   if Result = '' then
     Result := GetEnvironmentVariable('TELEGRAM_BOT_TOKEN');
@@ -160,6 +170,17 @@ end;
 
 function TTelegramTool.GetBot(const Token: string): TftBot;
 begin
+  if ServerMode then
+  begin
+    if not GBots.TryGetValue(Token, Result) then
+    begin
+      if GBots.Count >= 500 then
+        raise Exception.Create('Demasiados bots distintos en este servidor; intenta mas tarde.');
+      Result := TftBot.Create(Token, 'https://api.telegram.org');
+      GBots.Add(Token, Result);
+    end;
+    Exit;
+  end;
   if (GBot = nil) or (GBotToken <> Token) then
   begin
     FreeAndNil(GBot);
@@ -222,8 +243,22 @@ var
   R:      TJSONObject;
   ChatId: Integer;
 begin
+  if ServerMode then
+    GBotLock.Enter;
+  try
   try
     Op    := LowerCase(Trim(AParams.Operation));
+    if ServerMode then
+    begin
+      // Solo el bot de la cuenta conectada; un token del modelo no cuenta.
+      AParams.Token := Cred(AuthContext, 'TELEGRAM_BOT_TOKEN');
+      if AParams.Token = '' then
+        raise Exception.Create('No hay un bot de Telegram conectado (Conexiones).');
+      // Enviar un fichero del servidor seria una fuga de datos.
+      if Trim(AParams.Path) <> '' then
+        raise Exception.Create('En este servidor no se envian archivos desde rutas; ' +
+          'para fotos usa photoUrl con una URL publica.');
+    end;
     Token := ResolveToken(AParams.Token);
     Bot   := GetBot(Token);
 
@@ -518,6 +553,10 @@ begin
         .AddText('Error [mcp-telegram]: ' + E.Message)
         .Build;
   end;
+  finally
+    if ServerMode then
+      GBotLock.Leave;
+  end;
 end;
 
 constructor TTelegramTool.Create;
@@ -548,5 +587,14 @@ begin
     end);
   WriteLn(ErrOutput, '[MCPService]   + mcp-telegram');
 end;
+
+initialization
+  GBots    := TDictionary<string, TftBot>.Create;
+  GBotLock := TCriticalSection.Create;
+
+finalization
+  // Los TftBot no se liberan a proposito (ver arriba): el proceso termina.
+  GBots.Free;
+  GBotLock.Free;
 
 end.

@@ -8,6 +8,7 @@ uses
   UMakerAi.MCPServer.Stdio,
   UMakerAi.MCPServer.Http,
   UMakerAi.MCPServer.SSE,
+  MCPTool.Credential in '..\_shared\MCPTool.Credential.pas',
   MCPTool.Telegram in 'MCPTool.Telegram.pas';
 
 var
@@ -45,12 +46,16 @@ begin
       MCPServer := TAiMCPStdioServer.Create(nil);
 
     MCPServer.ServerName       := 'mcp-telegram';
-    MCPServer.ServerVersion := '1.4.6';
+    MCPServer.ServerVersion := '1.5.0';
     MCPServer.Port             := Port;
     MCPServer.CorsEnabled      := True;
     MCPServer.CorsAllowedOrigins := '*';
 
     MCPTool.Telegram.RegisterTools(MCPServer);
+    // En red (servidor) la cuenta llega por cabecera en cada peticion
+    // (MCPTool.Credential); en stdio, de las variables de entorno.
+    if not SameText(Protocol, 'stdio') then
+      MCPTool.Credential.UseHeaderCredential(MCPServer);
     MCPServer.Start;
 
     if MCPServer is TAiMCPSSEHttpServer then

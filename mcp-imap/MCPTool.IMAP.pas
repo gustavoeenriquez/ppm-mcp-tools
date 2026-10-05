@@ -46,7 +46,9 @@ uses
   IdText,
   IdAttachment,
   TaurusTLS,  // reemplaza IdSSLOpenSSL — soporta OpenSSL 1.1.x y 3.x
-  IdExplicitTLSClientServerBase;
+  IdExplicitTLSClientServerBase,
+  MCPTool.Credential,       // modo servidor: cuenta por cabecera
+  MCPTool.MailAutoconfig;   // servidores a partir de la direccion
 
 type
 
@@ -297,20 +299,54 @@ var
   SSL:  TTaurusTLSIOHandlerSocket;
 begin
   try
-    // Fallback a variables de entorno (conector MakerCLI u otro host MCP):
-    // la credencial se inyecta al proceso y nunca pasa por el LLM.
-    if AParams.Host     = '' then AParams.Host     := GetEnvironmentVariable('MAIL_IMAP_HOST');
-    if AParams.Username = '' then AParams.Username := GetEnvironmentVariable('MAIL_USER');
-    if AParams.Password = '' then AParams.Password := GetEnvironmentVariable('MAIL_PASS');
-    if AParams.Port     = 0  then AParams.Port     := StrToIntDef(GetEnvironmentVariable('MAIL_IMAP_PORT'), 0);
-    if AParams.SSL      = '' then AParams.SSL      := GetEnvironmentVariable('MAIL_IMAP_SSL');
+    var Op     := LowerCase(Trim(AParams.Operation));
+    if Op = '' then Op := 'folders';
+
+    if ServerMode then
+    begin
+      // Proceso compartido en un servidor (MCPTool.Credential): solo vale la
+      // cuenta conectada que trae la cabecera; lo que mande el modelo no.
+      AParams.Username := Cred(AuthContext, 'MAIL_USER');
+      AParams.Password := Cred(AuthContext, 'MAIL_PASS');
+      AParams.Host     := Cred(AuthContext, 'MAIL_IMAP_HOST');
+      AParams.Port     := StrToIntDef(Cred(AuthContext, 'MAIL_IMAP_PORT'), 0);
+      AParams.SSL      := Cred(AuthContext, 'MAIL_IMAP_SSL');
+      if AParams.Username = '' then
+        raise Exception.Create('La cuenta de correo conectada no tiene direccion.');
+      if AParams.Host = '' then
+      begin
+        var AcImap, AcSmtp: TMailEndpoint;
+        var Src: string;
+        AutoconfigMail(AParams.Username, AcImap, AcSmtp, Src);
+        AParams.Host := AcImap.Host;
+        if AParams.Port = 0 then AParams.Port := AcImap.Port;
+        if AParams.SSL = '' then AParams.SSL := AcImap.SSL;
+      end;
+      // Solo IMAP cifrado y sus puertos: nada de usar el proceso para hablar
+      // con otros servicios.
+      if (AParams.Port <> 0) and (AParams.Port <> 993) and (AParams.Port <> 143) then
+        raise Exception.Create('Puerto IMAP no permitido (993 o 143).');
+      if SameText(Trim(AParams.SSL), 'none') then
+        raise Exception.Create('La conexion IMAP debe ir cifrada (ssl o starttls).');
+      if Op = 'attachment' then
+        raise Exception.Create('En este servidor los adjuntos no se guardan en disco: ' +
+          'usa get para ver el mensaje y la lista de adjuntos.');
+    end
+    else
+    begin
+      // Fallback a variables de entorno (conector MakerCLI u otro host MCP):
+      // la credencial se inyecta al proceso y nunca pasa por el LLM.
+      if AParams.Host     = '' then AParams.Host     := GetEnvironmentVariable('MAIL_IMAP_HOST');
+      if AParams.Username = '' then AParams.Username := GetEnvironmentVariable('MAIL_USER');
+      if AParams.Password = '' then AParams.Password := GetEnvironmentVariable('MAIL_PASS');
+      if AParams.Port     = 0  then AParams.Port     := StrToIntDef(GetEnvironmentVariable('MAIL_IMAP_PORT'), 0);
+      if AParams.SSL      = '' then AParams.SSL      := GetEnvironmentVariable('MAIL_IMAP_SSL');
+    end;
 
     if AParams.Host     = '' then raise Exception.Create('"host" is required (or configure MAIL_IMAP_HOST)');
     if AParams.Username = '' then raise Exception.Create('"username" is required (or configure MAIL_USER)');
     if AParams.Password = '' then raise Exception.Create('"password" is required (or configure MAIL_PASS)');
 
-    var Op     := LowerCase(Trim(AParams.Operation));
-    if Op = '' then Op := 'folders';
     var Folder := AParams.Folder;
     if Folder = '' then Folder := 'INBOX';
     var Limit  := AParams.Limit;
@@ -322,7 +358,12 @@ begin
       SetupIMAP(AParams, IMAP, SSL);
       // Connect(AAutoLogin=True) already calls Login internally — do NOT call
       // Login again or the server gets a LOGIN in csAuthenticated state → [CLIENTBUG].
-      IMAP.Connect;
+      try
+        IMAP.Connect;
+      except
+        on E: Exception do
+          raise Exception.Create(MailLoginHint(AParams.Host, E.Message));
+      end;
 
       try
         // ── folders ──────────────────────────────────────────────────────────

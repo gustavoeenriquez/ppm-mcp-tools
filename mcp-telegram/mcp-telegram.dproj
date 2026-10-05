@@ -70,6 +70,7 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
+        <DCCReference Include="..\_shared\MCPTool.Credential.pas"/>
         <DCCReference Include="../src/tools/Tier4/MCPTool.Telegram.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
