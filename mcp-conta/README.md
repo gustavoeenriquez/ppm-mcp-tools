@@ -9,20 +9,32 @@ Colombia) to AI agents, built on the same MakerAI stack as the rest of
 | Tool | Scope | Default port | Binary |
 |------|-------|--------------|--------|
 | `mcp-conta-query` | **Read-only** — only `Get*`/`RPT_*` style reads | 8781 | `mcp-conta-query/dist/` |
-| `mcp-conta` | **Full** — all 337 operations incl. writes | 8780 | `mcp-conta/dist/` |
+| `mcp-conta` | **Full** — all 401 operations incl. writes | 8780 | `mcp-conta/dist/` |
 
 Shared pieces:
 
 - `_shared/MCPTool.ContaClient.pas` — HTTP client (Basic auth, DataSnap
   envelope, GET with POST fallback for large payloads).
-- `mcp-conta/MCPTool.Conta.Catalog.pas` — **generated** catalog: 338 public
-  methods of `uConServerMethods.pas` grouped into 25 domain modules.
-  Regenerate with `gen_catalog_pas.py` (extract via `extract_catalog.py`)
-  whenever the server adds methods. NOTE: those two scripts are no longer in
-  the repo (2026-09-06); until they are recovered, a new method has to be added
-  to the catalog by hand — the doc string is the interface comment of
-  `uConServerMethods.pas` verbatim, and that comment IS what the model reads in
-  `operation:"help"`, so a stale comment is worse than none.
+- `mcp-conta/MCPTool.Conta.Catalog.pas` — **generated** catalog: the 401
+  public `CON_*` methods of `uConServerMethods.pas` grouped into 25 domain
+  modules. Regenerate whenever the server adds or documents methods:
+
+  ```
+  python gen_catalog.py [path\to\Server]   # default e:\copilot\contabilidad\Server
+  python gen_params.py                      # then the params unit
+  ```
+
+  `catalogo_modulos.json` is the only hand-kept part: which module each method
+  belongs to (plus module titles and descriptions). The script fails, listing
+  them, if the server has a method the JSON doesn't assign or the JSON names one
+  that no longer exists. The doc string is the `//` comment right above the
+  declaration, verbatim — it IS what the model reads, so a stale comment is
+  worse than none. The write flag is derived from the code: the method, or any
+  routine it calls (transitively, across the Server units), has an
+  INSERT/UPDATE/DELETE SQL literal or sends a message (uTwilio/uMailSender);
+  plain HTTP reads (FEVS, Wompi) don't count. The few exceptions live in the
+  JSON with their reason (`lectura_aunque_escribe`,
+  `escritura_aunque_no_se_detecte`).
 - `mcp-conta/MCPTool.Conta.pas` — one generic tool class instantiated per
   module; the read-only flag hides/rejects write operations client-side.
 
@@ -79,11 +91,12 @@ tokenizer, cost of declaring the tools in one turn):
 
 | | full | compact |
 |---|---|---|
-| mcp-conta | 14,774 | 861 |
-| mcp-conta-query | 13,200 | 865 |
+| mcp-conta | 15,644 | 861 |
+| mcp-conta-query | 13,670 | 865 |
 
-Reading `conta_modulos()` costs ~1.3k; one module 130–3,000 depending on its
-size (pos and nomina are the largest). Regenerate the params unit whenever the
+Reading `conta_modulos()` costs ~1.5k; one module 300–3,000 depending on its
+size (pos, nomina, empresa, reportes and facturacion_electronica are the
+largest). Regenerate the params unit whenever the
 server changes what a method reads:
 `python gen_params.py [path\to\uConServerMethods.pas]`.
 
