@@ -65,7 +65,7 @@ begin
     M('CrearEmpresa', 'Crea una empresa (tenant) NUEVA y su usuario administrador inicial. Falla si el nit_empresa ya existe: para modificar use SaveEmpresa. Requiere perfil ADMIN y que el NIT en sesion este habilitado para crear empresas (variable de entorno CON_TENANT_ADMIN_NITS del servidor). Si no se indica admin_login se replica el usuario que hace la llamada (mismo login y contrasena), de modo que quede acceso inmediato. Con sembrar=true (default) importa el PUC maestro del pais, los tipos de comprobante y la configuracion de cuentas por concepto. Params: { nit_empresa, razon_social, pais_codigo, moneda_codigo?, grupo_niif?, decimales?, anio_fiscal_mes?, sembrar?, admin_login?, admin_nombre?, admin_email?, admin_password? } admin_password es SHA-256 hex', True),
     M('GetUsuarios', 'Lista usuarios de la empresa (sin password). Solo ADMIN.', False),
     M('SaveUsuario', 'Crea o actualiza usuario. Solo ADMIN. Params: { login, nombre, email, perfil, activo, password? } password es SHA-256 hex; opcional en edición (si vacío no se cambia)', True),
-    M('ChangePassword', 'Cambia la contraseña del usuario en sesión Params: { password_actual, password_nueva } — ambos SHA-256 hex', False),
+    M('ChangePassword', 'Cambia la contraseña del usuario en sesión Params: { password_actual, password_nueva } — ambos SHA-256 hex', True),
     M('GetPermisos', 'Retorna permisos por módulo de un usuario Params: { login: string } — solo ADMIN puede consultar otros; el propio usuario se retorna siempre', False),
     M('SavePermisos', 'Guarda permisos de un usuario. Solo ADMIN. Params: { login: string, permisos: { modulo: bool, ... } }', True),
     M('GetConfigEmail', 'Obtiene la configuración SMTP de la empresa', False),
@@ -179,7 +179,7 @@ begin
     M('SaveTRM', '', True),
     M('DeleteTRM', '', True),
     M('GetTRMVigente', '', False),
-    M('AjusteDiferenciaCambio', '', False),
+    M('AjusteDiferenciaCambio', '', True),
     M('ImportarTRMBanRep', 'Importa TRM USD desde API pública BanRep Params: { fecha_desde, fecha_hasta } Returns: { status, importadas, errores }', True),
     M('RPT_Dashboard', 'Dashboard KPIs Params: { anio: int, mes: int } Returns: { meses:[{mes,mes_nombre,ingresos,gastos,utilidad}], cartera_cobrar, cartera_pagar, utilidad_anio, comprobantes_mes, borradores_mes }', False),
     M('ImportarComprobantes', 'Importación masiva de comprobantes desde Excel Params: { comprobantes: [{tipo_codigo, fecha, descripcion, ref_tipo, ref_numero, movimientos:[{cuenta_codigo, tercero_tipo_id, tercero_numero_id, centro...', True),
@@ -200,7 +200,7 @@ begin
     M('PreviewDepreciacion', 'Preview de depreciación del período (sin guardar) Params: { anio: int, mes: int } Returns: array of { codigo, descripcion, valor_dep, ya_depreciado }', False),
     M('EjecutarDepreciacion', 'Ejecuta la depreciación: crea comprobante DEP y registra en con_depreciaciones Params: { anio: int, mes: int } Returns: { ok, comp_tipo, comp_numero, activos_depreciados, total_depreciacion }', True),
     M('BajaActivoFijo', 'Baja (retiro/venta/siniestro) de un activo — crea comprobante BAJ Params: { codigo, fecha_baja, tipo_baja, valor_venta, cuenta_destino?, cuenta_resultado, anio, mes }', True),
-    M('RevaluarActivoFijo', 'Revalua un activo — actualiza valor_adquisicion, crea comprobante REVAL Params: { codigo, nuevo_valor, cuenta_ajuste, anio, mes }', False),
+    M('RevaluarActivoFijo', 'Revalua un activo — actualiza valor_adquisicion, crea comprobante REVAL Params: { codigo, nuevo_valor, cuenta_ajuste, anio, mes }', True),
     M('GetHistorialDepreciaciones', 'Historial completo de depreciaciones de todos los activos Returns: array of { activo_codigo, descripcion, categoria, anio, mes, valor, comp_tipo, comp_numero }', False)
   ];
 
@@ -271,7 +271,7 @@ begin
     M('ContabilizarFacturaFEV', 'Genera asiento contable automático desde una factura FEVs (CUFE) Usa con_config_cuentas para determinar las cuentas Params: { cufe: string }', True),
     M('EmitirFacturaElectronica', 'Emite una factura electrónica vía FEVs → DIAN. Params: { documento_id: int } Returns: { cufe, estado, status_message, track_id? }', True),
     M('GetFEDocumentos', 'Historial de documentos FE emitidos desde contabilidad Params: { estado?, fecha_desde?, fecha_hasta?, page?, page_size? }', False),
-    M('ConsultarEstadoFE', 'Consulta estado DIAN de un documento FE (via FEVs) Params: { cufe: string } Returns: { cufe, estado, status_message }', False),
+    M('ConsultarEstadoFE', 'Consulta estado DIAN de un documento FE (via FEVs) Params: { cufe: string } Returns: { cufe, estado, status_message }', True),
     M('GetFEConfig', 'Retorna configuración de software emisor FE', False),
     M('SaveFEConfig', 'Guarda configuración FE (UPSERT) Params: { software_id, software_pin, cert_pfx_ruta, cert_password, cert_vence?, ambiente, set_pruebas_id? }', True),
     M('GetFEResoluciones', 'Lista resoluciones de facturación DIAN de la empresa Params: { activa? }', False),
@@ -477,7 +477,7 @@ begin
     M('GetTurnoActivo', 'Sin params — devuelve turno activo del usuario o vacio', False),
     M('AbrirTurno', 'Params: { saldo_inicial }', True),
     M('CerrarTurno', 'Params: { id, saldo_final?, notas? }', True),
-    M('POSCobrar', 'Params: { turno_id, tipo_codigo, fecha, tercero_tipo_id?, tercero_numero_id?, forma_pago, efectivo_recibido?, items:[{articulo_codigo?,descripcion, cantidad,precio_unitario,descuento_pct,iva_pct}] }', False),
+    M('POSCobrar', 'Params: { turno_id, tipo_codigo, fecha, tercero_tipo_id?, tercero_numero_id?, forma_pago, efectivo_recibido?, items:[{articulo_codigo?,descripcion, cantidad,precio_unitario,descuento_pct,iva_pct}] }', True),
     M('GetMovimientosCaja', 'POS-2: Historial / movimientos / reporte de turno Params: { turno_id }', False),
     M('SaveMovimientoCaja', 'Params: { turno_id, tipo, concepto, monto }', True),
     M('GetVentasPOSByTurno', 'Params: { turno_id }', False),
@@ -493,18 +493,18 @@ begin
     M('GetOrdenProduccion', 'Params: { id }', False),
     M('SaveOrdenProduccion', 'Params: { id?, bom_id?, producto_codigo, descripcion, cantidad_planificada, fecha_inicio?, fecha_fin_planificada?, bodega_destino_id?, notas?, materiales:[] }', True),
     M('IniciarOrdenProduccion', 'Params: { id }', True),
-    M('CompletarOrdenProduccion', 'Params: { id, cantidad_producida }', False),
+    M('CompletarOrdenProduccion', 'Params: { id, cantidad_producida }', True),
     M('CancelarOrdenProduccion', 'Params: { id }', True),
     M('GetResumenManufactura', 'MFG-3 Dashboard Params: { fecha_desde, fecha_hasta }', False),
     M('GetProduccionPeriodo', 'Params: { fecha_desde, fecha_hasta }', False),
     M('GetTopProductosProducidos', 'Params: { fecha_desde, fecha_hasta }', False),
     M('GenerarTokenPortal', 'Portal del cliente (publico — sin sesion requerida) Params: { tercero_tipo_id, tercero_numero_id }', True),
     M('GetPortalData', 'Params: { token } — SIN CheckSession', False),
-    M('PortalGenerarPago', 'Params: { token, documento_id } — SIN CheckSession', False),
+    M('PortalGenerarPago', 'Params: { token, documento_id } — SIN CheckSession', True),
     M('GetConfigWompi', 'Wompi — pago en linea Params: {}', False),
     M('SaveConfigWompi', 'Params: { public_key, private_key, integrity_key, eventos_key, ambiente, activo }', True),
     M('GenerarPagoWompi', 'Params: { documento_id: int, redirect_url?: string }', True),
-    M('ConsultarPagoWompi', 'Params: { documento_id: int }', False),
+    M('ConsultarPagoWompi', 'Params: { documento_id: int }', True),
     M('GetListasPrecio', 'Lista de precios Params: {}', False),
     M('SaveListaPrecio', 'Crea o actualiza una lista de precios Params: { id?, nombre, moneda_codigo, activa, vigente_desde?, vigente_hasta? }', True),
     M('GetListaPrecioDetalle', 'Detalle de una lista de precio Params: { lista_id: int }', False),
@@ -514,7 +514,7 @@ begin
     M('SaveConfigVentas', 'Guarda configuración de ventas (UPSERT) Params: { tipo_comprobante_venta, cuenta_deudores_comerciales, cuenta_ventas, cuenta_iva_ventas, cuenta_descuentos, bodega_default }', True),
     M('GetFormasPago', 'Formas de pago (contado/credito estilo Siigo) Sin maneja_vencimiento => CONTADO (debito a cuenta_codigo caja/bancos) Con maneja_vencimiento => CREDITO (debito a deudores + vencimiento) Params GetForm...', False),
     M('SaveFormaPago', 'Params: { id?, nombre, tipo, cuenta_codigo, maneja_vencimiento, dias_vencimiento?, activa?, orden? }', True),
-    M('ToggleFormaPago', 'Params: { id, activa }', False)
+    M('ToggleFormaPago', 'Params: { id, activa }', True)
   ];
 
   // CRM y conversaciones (26 ops)
@@ -547,7 +547,7 @@ begin
     M('GetPipeline', 'Pipeline configurables', False),
     M('SaveEtapa', '', True),
     M('DeleteEtapa', '', True),
-    M('ReorderEtapas', '', False)
+    M('ReorderEtapas', '', True)
   ];
 end;
 

@@ -1,7 +1,7 @@
 {
   "name": "mcp-conta-query",
-  "description": "READ-ONLY access to the PascalAI accounting system (ConServer, Colombia, multi-tenant by NIT). Same 25 domain tools as mcp-conta (conta_sistema, conta_puc, conta_terceros, conta_comprobantes, conta_reportes, conta_nomina, conta_ventas, conta_pos, conta_crm, ...) but every write operation (Save/Delete/Contabilizar/Anular/Cerrar/Importar/...) is hidden from the tool descriptions and rejected client-side before any request is sent. Safe to expose to autonomous agents even when the configured user is an admin. operation:\"help\" returns every available operation of the module with its documentation and expected params. For writes use mcp-conta.",
-  "version": "1.0.3",
+  "description": "READ-ONLY access to the PascalAI accounting system (ConServer, Colombia, multi-tenant by NIT). Same 25 domain tools as mcp-conta (conta_sistema, conta_puc, conta_terceros, conta_comprobantes, conta_reportes, conta_nomina, conta_ventas, conta_pos, conta_crm, ...) but every write operation (Save/Delete/Contabilizar/Anular/Cerrar/Importar/...) is hidden from the tool descriptions and rejected client-side before any request is sent. Safe to expose to autonomous agents even when the configured user is an admin. operation:\"help\" returns every available operation of the module with its documentation and expected params. For writes use mcp-conta. With --tools compact (or CONTA_TOOLS=compact) the surface is two tools instead: conta_modulos(modulo?) lists modules, or the actions and params of one, and conta(modulo, accion, args, nit?) runs an action; args is validated against the params the server reads and an invalid call returns the valid param list.",
+  "version": "1.1.0",
   "category": "accounting",
   "config": [
     {
@@ -28,6 +28,12 @@
       "secret": true,
       "required": true,
       "help": "Contrasena del usuario; se guarda cifrada en tu equipo y nunca pasa por el chat"
+    },
+    {
+      "key": "CONTA_TOOLS",
+      "label": "Superficie de herramientas",
+      "default": "full",
+      "help": "full = 25 herramientas, una por modulo (~13,3k tokens por turno). compact = solo conta_modulos + conta (~0,9k tokens): el modelo descubre acciones y parametros bajo demanda. Equivale a --tools full|compact"
     }
   ],
   "inputSchema": {
@@ -51,6 +57,7 @@
     ]
   },
   "env": {
+    "CONTA_TOOLS": "full (default) = 25 domain tools; compact = two tools, conta_modulos(modulo?) + conta(modulo, accion, args, nit?). The --tools full|compact flag takes precedence",
     "CONTA_URL": "Base server URL, no trailing slash (default https://conta.gustavoenriquez.com)",
     "CONTA_LOGIN": "User login (required)",
     "CONTA_NIT": "Company NIT / tenant (required)",

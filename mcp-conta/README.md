@@ -50,6 +50,43 @@ documentation extracted from the server source (including expected params)
 and its write flag. **Agents should call `help` before using an unfamiliar
 module** — write operations are marked `*` in the tool description.
 
+## Compact surface (`--tools compact`, since 1.1.0)
+
+A broker that declares every tool on every turn (MKAIServer) paid for the
+25 tools above even when the question had nothing to do with accounting.
+`--tools compact` (or `CONTA_TOOLS=compact`; the flag wins) exposes two tools
+instead:
+
+| Tool | Arguments | Does |
+|------|-----------|------|
+| `conta_modulos` | `modulo?` | No args: one line per module. With `modulo`: its actions, each with `doc`, `params` (`name!:type`, `!` = required) and `escribe:true` on writes |
+| `conta` | `modulo`, `accion`, `args` (object), `nit?` | Runs the action |
+
+`args` is validated before calling the server against
+`MCPTool.Conta.Params.pas`, which `gen_params.py` **generates from the server
+source** (what each `CON_*` method actually reads, its type, and which ones it
+rejects when empty). A missing, mistyped or unknown key (unknown only when the
+method's key list is complete) comes back as
+`{"ok":false,"error":"...","params_validos":"..."}`, and a server-side
+`{"error":...}` gets the same `params_validos` appended, so the model fixes
+the call without asking `conta_modulos` again. The read-only split is kept:
+`mcp-conta-query` hides write actions from `conta_modulos` and rejects them in
+`conta`. Auth is untouched (header relay in http/sse, `nit` via
+`HeaderConNit`, `CONTA_*` in stdio). Default stays `full`.
+
+Measured with `medir_tokens.py` (Anthropic `count_tokens`, Sonnet 5.5
+tokenizer, cost of declaring the tools in one turn):
+
+| | full | compact |
+|---|---|---|
+| mcp-conta | 14,774 | 861 |
+| mcp-conta-query | 13,200 | 865 |
+
+Reading `conta_modulos()` costs ~1.3k; one module 130–3,000 depending on its
+size (pos and nomina are the largest). Regenerate the params unit whenever the
+server changes what a method reads:
+`python gen_params.py [path\to\uConServerMethods.pas]`.
+
 ## Configuration (environment variables)
 
 Auth is HTTP Basic on every request (stateless, no login endpoint):
@@ -62,6 +99,7 @@ Auth is HTTP Basic on every request (stateless, no login endpoint):
 | `CONTA_NIT` | yes | — | Company NIT (tenant) |
 | `CONTA_PASSWORD` | yes* | — | Plain password (hashed in-process) |
 | `CONTA_PASSWORD_SHA256` | yes* | — | Pre-hashed password (takes precedence) |
+| `CONTA_TOOLS` | no | `full` | `full` or `compact` (see above); `--tools` wins |
 
 \* one of the two.
 

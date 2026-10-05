@@ -72,6 +72,7 @@
         </DelphiCompile>
         <DCCReference Include="..\_shared\MCPTool.ContaClient.pas"/>
         <DCCReference Include="MCPTool.Conta.Catalog.pas"/>
+        <DCCReference Include="MCPTool.Conta.Params.pas"/>
         <DCCReference Include="MCPTool.Conta.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>

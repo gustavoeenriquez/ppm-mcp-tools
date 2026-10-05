@@ -1,7 +1,7 @@
 {
   "name": "mcp-conta",
-  "description": "FULL access to the PascalAI accounting system (ConServer, Colombia, multi-tenant by NIT). Exposes 25 MCP tools, one per domain: conta_sistema, conta_empresa, conta_puc, conta_terceros, conta_comprobantes, conta_periodos, conta_retenciones, conta_centros_costo, conta_reportes, conta_activos_fijos, conta_presupuestos, conta_conciliacion, conta_flujo_efectivo, conta_exogena, conta_facturacion_electronica, conta_importacion, conta_nomina, conta_inventario, conta_ventas, conta_compras, conta_cuentas_pagar, conta_tesoreria, conta_cobranza, conta_pos, conta_crm. Every tool takes the same arguments (schema below). operation:\"help\" returns every operation of the module with its documentation and expected params, extracted from the server source. Write operations are marked * in each tool description. For a read-only surface use mcp-conta-query.",
-  "version": "1.0.3",
+  "description": "FULL access to the PascalAI accounting system (ConServer, Colombia, multi-tenant by NIT). Exposes 25 MCP tools, one per domain: conta_sistema, conta_empresa, conta_puc, conta_terceros, conta_comprobantes, conta_periodos, conta_retenciones, conta_centros_costo, conta_reportes, conta_activos_fijos, conta_presupuestos, conta_conciliacion, conta_flujo_efectivo, conta_exogena, conta_facturacion_electronica, conta_importacion, conta_nomina, conta_inventario, conta_ventas, conta_compras, conta_cuentas_pagar, conta_tesoreria, conta_cobranza, conta_pos, conta_crm. Every tool takes the same arguments (schema below). operation:\"help\" returns every operation of the module with its documentation and expected params, extracted from the server source. Write operations are marked * in each tool description. For a read-only surface use mcp-conta-query. With --tools compact (or CONTA_TOOLS=compact) the surface is two tools instead: conta_modulos(modulo?) lists modules, or the actions and params of one, and conta(modulo, accion, args, nit?) runs an action; args is validated against the params the server reads and an invalid call returns the valid param list.",
+  "version": "1.1.0",
   "category": "accounting",
   "config": [
     { "key": "CONTA_URL", "label": "URL del servidor",
@@ -13,6 +13,9 @@
       "help": "NIT de la empresa (sin digito de verificacion) sobre la que trabajara el asistente por omision. Si llevas varias empresas, el asistente puede cambiar por llamada con el argumento nit" },
     { "key": "CONTA_PASSWORD", "label": "Contrasena", "secret": true, "required": true,
       "help": "Contrasena del usuario; se guarda cifrada en tu equipo y nunca pasa por el chat" },
+    { "key": "CONTA_TOOLS", "label": "Superficie de herramientas",
+      "default": "full",
+      "help": "full = 25 herramientas, una por modulo (~14,8k tokens por turno). compact = solo conta_modulos + conta (~0,9k tokens): el modelo descubre acciones y parametros bajo demanda. Equivale a --tools full|compact" },
     { "key": "CONTA_NIT_STRICT", "label": "Exigir empresa en cada escritura",
       "default": "0",
       "help": "Ponlo en 1 si llevas mas de una empresa: entonces toda operacion que modifique datos debe indicar el nit, para que no se contabilice en la empresa equivocada por omision" }
@@ -36,6 +39,7 @@
     "required": ["operation"]
   },
   "env": {
+    "CONTA_TOOLS": "full (default) = 25 domain tools; compact = two tools, conta_modulos(modulo?) + conta(modulo, accion, args, nit?). The --tools full|compact flag takes precedence",
     "CONTA_URL": "Base server URL, no trailing slash (default https://conta.gustavoenriquez.com)",
     "CONTA_LOGIN": "User login (required)",
     "CONTA_NIT": "Company NIT / tenant (required)",

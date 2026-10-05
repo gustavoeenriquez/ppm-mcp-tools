@@ -10,11 +10,13 @@ uses
   UMakerAi.MCPServer.SSE,
   MCPTool.ContaClient in '..\_shared\MCPTool.ContaClient.pas',
   MCPTool.Conta.Catalog in '..\mcp-conta\MCPTool.Conta.Catalog.pas',
+  MCPTool.Conta.Params in '..\mcp-conta\MCPTool.Conta.Params.pas',
   MCPTool.Conta in '..\mcp-conta\MCPTool.Conta.pas';
 
 var
   MCPServer: TAiMCPServer;
   Protocol: string;
+  Tools: string;
   Port: Integer;
   i: Integer;
 
@@ -29,6 +31,13 @@ begin
     begin
       Inc(i);
       Protocol := LowerCase(ParamStr(i));
+    end
+    else if SameText(ParamStr(i), '--tools') and (i < ParamCount) then
+    begin
+      // full = 25 herramientas (una por modulo); compact = conta_modulos +
+      // conta. Sin la opcion se mira CONTA_TOOLS; sin las dos, full.
+      Inc(i);
+      Tools := ParamStr(i);
     end
     else if SameText(ParamStr(i), '--port') and (i < ParamCount) then
     begin
@@ -47,12 +56,13 @@ begin
       MCPServer := TAiMCPStdioServer.Create(nil);
 
     MCPServer.ServerName         := 'mcp-conta-query';
-    MCPServer.ServerVersion := '1.0.3';
+    MCPServer.ServerVersion := '1.1.0';
     MCPServer.Port               := Port;
     MCPServer.CorsEnabled        := True;
     MCPServer.CorsAllowedOrigins := '*';
 
-    MCPTool.Conta.RegisterTools(MCPServer, { AReadOnly } True);
+    MCPTool.Conta.RegisterTools(MCPServer, { AReadOnly } True,
+      MCPTool.Conta.ModoCompacto(Tools));
 
     // En red, la credencial la pone el llamante en el header y este proceso
     // solo la reenvia. En stdio se usan las CONTA_* del entorno.
