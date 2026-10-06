@@ -195,7 +195,7 @@ begin
   GModules[8].Methods := [
     M('RPT_BalancePrueba', 'Balance de Prueba Params: { anio: int, mes_desde: int, mes_hasta: int }', False),
     M('RPT_LibroDiario', 'Libro Diario Params: { anio: int, mes: int, tipo_codigo: string, fecha_desde, fecha_hasta }', False),
-    M('RPT_LibroMayor', 'Libro Mayor por cuenta Params: { cuenta_codigo: string, anio: int, mes_desde: int, mes_hasta: int }', False),
+    M('RPT_LibroMayor', 'Libro Mayor por cuenta Params: { cuenta_codigo: string, anio: int, mes_desde: int, mes_hasta: int } Returns: filas con debito, credito y saldo_acumulado (saldo tras la linea, ya incluye la apertura). saldo_anterior es el saldo de APERTURA del rango y se repite igual en todas las filas: no es el saldo de la fila previa. Solo cuentas de movimiento: una cuenta padre devuelve 0 filas.', False),
     M('RPT_BalanceGeneral', 'Balance General (Estado de Situación Financiera) Acumula cuentas clase=''B'' desde mes 1 hasta el mes indicado Params: { anio: int, mes: int }', False),
     M('RPT_EstadoResultados', 'Estado de Resultados Cuentas clase=''R'' para el rango de meses indicado Params: { anio: int, mes_desde: int, mes_hasta: int }', False),
     M('RPT_Cartera', 'Cartera — Aging de cuentas por cobrar/pagar Params: { tipo: ''COBRAR''|''PAGAR'', fecha_corte: ''YYYY-MM-DD'', tercero_numero_id? } ← filtra un solo tercero en el servidor Returns: array of { tercero_tipo_id, tercero_numero_id, nombre, saldo_total, corriente, dias_31_60, dias_61_90, dias_91_120, mayor_120 }', False),
