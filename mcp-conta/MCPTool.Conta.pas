@@ -447,10 +447,13 @@ begin
   Result := FDescription;
 end;
 
-// tools/list clona el esquema: este objeto sigue siendo de la herramienta.
+// Desde AiMaker 3.9 tools/list se queda con el objeto y lo LIBERA (ya no lo
+// clona). Devolver FSchema hacia que el segundo tools/list usara memoria
+// liberada: el servidor caia (RTE 231) en la conexion siguiente a una que se
+// cerro (2026-10-07). Se entrega una copia; FSchema sigue siendo de la tool.
 function TContaCompactTool.GetInputSchema: TJSONObject;
 begin
-  Result := FSchema;
+  Result := FSchema.Clone as TJSONObject;
 end;
 
 { TContaModulosTool }
