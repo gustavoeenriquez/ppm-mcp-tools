@@ -193,6 +193,14 @@ Built with **Delphi 12 Athens** targeting Win64 and Linux64 (89 tools ship both 
 
 ## Shared
 
+- `_shared/MCPTool.Privileges.pas` — **MCP_ALLOWED_ROOTS**: if the owner of the machine sets this
+  environment variable (directories separated by `;`), every path the tool touches must fall
+  inside one of them; otherwise the tool fails with a clear message. Unset = no limit (unchanged
+  behaviour). Honoured by `mcp-fs` (every operation, reads included), `mcp-shell` and
+  `mcp-code-exec` (workdir / database_path only — the command itself is not fenced) and
+  `mcp-python` (file_path / workdir only). The privilege level is the owner's decision: the
+  packages never impose a default.
+
 The [`_shared/`](./_shared/) folder contains `MCPTool.FDBase.pas` — the base FireDAC class used by all relational database tools.
 
 ---
