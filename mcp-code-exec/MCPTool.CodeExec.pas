@@ -1,4 +1,4 @@
-unit MCPTool.CodeExec;
+﻿unit MCPTool.CodeExec;
 
 (*
   MCPTool.CodeExec  Â·  mcp-code-exec  (port 8651)
@@ -80,6 +80,7 @@ procedure RegisterTools(AServer: TAiMCPServer);
 implementation
 
 uses
+  MCPTool.Privileges,
   System.SysUtils,
   System.Classes,
   System.IOUtils,
@@ -400,6 +401,16 @@ begin
     Op := LowerCase(Trim(AParams.Operation));
     if Op = '' then
       raise Exception.Create('"operation" is required');
+
+    // Alcance definido por el dueño (MCP_ALLOWED_ROOTS): workdir y base de
+    // datos. El codigo ejecutado puede tocar cualquier ruta; para impedirlo
+    // hay que no cargar esta tool (MakerCLI: local_privileges.exec=false).
+    if Trim(AParams.WorkDir) <> '' then
+      CheckPathAllowed(AParams.WorkDir, 'workdir')
+    else
+      CheckPathAllowed(GetCurrentDir, 'workdir');
+    if Trim(AParams.DatabasePath) <> '' then
+      CheckPathAllowed(AParams.DatabasePath, 'database_path');
 
     if      Op = 'run_python'       then R := DoRunPython(AParams)
     else if Op = 'run_javascript'   then R := DoRunJavaScript(AParams)

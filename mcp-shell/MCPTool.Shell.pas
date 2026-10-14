@@ -94,6 +94,9 @@ procedure RegisterTools(AServer: TAiMCPServer);
 
 implementation
 
+uses
+  MCPTool.Privileges;
+
 function TShellTool.BuildCmdLine(const AShell, ACommand: string): string;
 var
   S: string;
@@ -210,6 +213,14 @@ begin
     if AParams.Command = '' then
       raise Exception.Create('"command" is required');
 
+    // Alcance definido por el dueño (MCP_ALLOWED_ROOTS): acota el workdir.
+    // El comando en si puede tocar cualquier ruta; para impedirlo hay que
+    // no cargar esta tool (MakerCLI: local_privileges.exec=false).
+    if Trim(AParams.WorkDir) <> '' then
+      CheckPathAllowed(AParams.WorkDir, 'workdir')
+    else
+      CheckPathAllowed(GetCurrentDir, 'workdir');
+
     var CmdLine   := BuildCmdLine(AParams.Shell, AParams.Command);
     var Timeout   := AParams.TimeoutMs;
     if Timeout <= 0 then Timeout := 30000;
@@ -237,7 +248,7 @@ begin
   inherited;
   FName        := 'mcp-shell';
   FDescription :=
-    'Execute shell commands and capture stdout, stderr, and exit code. ' +
+    'Execute shell commands and capture stdout, stderr, and exit code. ' + PrivilegesNote +
     'shell param: cmd (default, Windows cmd.exe with UTF-8 codepage), powershell, bash. ' +
     'Params: command (required), shell, workdir, timeout_ms (30000), stdin_data. ' +
     'Returns: stdout, stderr, exit_code, ok (exit_code=0). ' +

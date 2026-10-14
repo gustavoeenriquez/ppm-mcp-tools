@@ -135,6 +135,9 @@ procedure RegisterTools(AServer: TAiMCPServer);
 
 implementation
 
+uses
+  MCPTool.Privileges;
+
 { --- Internal record for sortable FS entries --------------------------------- }
 
 type
@@ -662,6 +665,12 @@ begin
     Op := LowerCase(Trim(AParams.Operation));
     if Op = '' then raise Exception.Create('"operation" is required');
 
+    // Alcance definido por el dueño (MCP_ALLOWED_ROOTS, MCPTool.Privileges):
+    // TODA operacion pasa por aqui, lecturas incluidas. Sin la variable no
+    // hay limite.
+    if AParams.Path <> '' then CheckPathAllowed(AParams.Path, 'path');
+    if AParams.Dest <> '' then CheckPathAllowed(AParams.Dest, 'dest');
+
     if      Op = 'read'   then R := DoRead(AParams)
     else if Op = 'write'  then R := DoWrite(AParams)
     else if Op = 'append' then R := DoAppend(AParams)
@@ -695,7 +704,7 @@ begin
   inherited;
   FName        := 'mcp-fs';
   FDescription :=
-    'Full filesystem manager: read, write, copy, move, delete files and directories.' + #10 +
+    'Full filesystem manager: read, write, copy, move, delete files and directories.' + PrivilegesNote + #10 +
     'ALWAYS include "operation" in every call. Use absolute paths to avoid ambiguity.' + #10 +
     '' + #10 +
     'OPERATIONS (required params listed after each name):' + #10 +

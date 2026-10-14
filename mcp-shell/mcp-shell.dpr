@@ -8,6 +8,7 @@ uses
   UMakerAi.MCPServer.Stdio,
   UMakerAi.MCPServer.Http,
   UMakerAi.MCPServer.SSE,
+  MCPTool.Privileges in '..\_shared\MCPTool.Privileges.pas',
   MCPTool.Shell in 'MCPTool.Shell.pas';
 
 var
