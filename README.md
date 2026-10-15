@@ -189,6 +189,11 @@ Built with **Delphi 12 Athens** targeting Win64 and Linux64 (89 tools ship both 
 | [mcp-calculator](./mcp-calculator/) | Evaluate mathematical expressions — arithmetic, exponentiation, common functions | Win64 + Linux64 | `ppm install mcp-calculator` |
 | [mcp-datetime](./mcp-datetime/) | Parse and reformat datetime strings across timezones and formats | Win64 + Linux64 | `ppm install mcp-datetime` |
 
+### Smart Home & IoT
+| Tool | Description | Platform | Install |
+|------|-------------|----------|---------|
+| [mcp-homeassistant](./mcp-homeassistant/) | Home Assistant REST API — states, areas, history, logbook, templates, service calls. `HASS_URL` + `HASS_TOKEN`; owner-set `HASS_READONLY`, `HASS_ALLOWED_DOMAINS`, `HASS_ALLOWED_EVENTS` | Win64 + Linux64 | `ppm install mcp-homeassistant` |
+
 ---
 
 ## Shared
