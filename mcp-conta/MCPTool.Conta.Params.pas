@@ -64,7 +64,7 @@ begin
   P('SaveFavoritos', 'favoritos', True, True);
   P('GetMenuOculto', '', True, False);
   P('SaveMenuOculto', 'modulos', True, True);
-  P('IssueAgentToken', 'login:s,alcance:s,descripcion:s,dias:i', True, True);
+  P('IssueAgentToken', 'login:s,alcance:s,descripcion:s,dias:i,metodos', True, True);
   P('RevokeAgentToken', 'token_sha256:s', True, True);
   P('GetAgentTokens', '', True, False);
   P('GetMisEmpresas', '', True, False);
@@ -72,7 +72,7 @@ begin
   P('GetAuditLog', 'fecha_desde:s,fecha_hasta:s,usuario:s,tabla:s,limit:i', True, True);
   P('GetNotificaciones', '', True, False);
   P('GetEmpresa', '', True, False);
-  P('SaveEmpresa', 'razon_social:s,pais_codigo:s,moneda_codigo:s,grupo_niif:i,decimales:i,anio_fiscal_mes:i,fev_url:s,co_obligatorio:b,requiere_aprobacion:b,responsable_iva:b,ne_municipio_dane:s,ne_direccion:s,ne_metodo_pago:s,fev_api_key', True, True);
+  P('SaveEmpresa', 'razon_social:s,pais_codigo:s,moneda_codigo:s,grupo_niif:i,decimales:i,anio_fiscal_mes:i,fev_url:s,co_obligatorio:b,requiere_aprobacion:b,responsable_iva:b,ne_municipio_dane:s,ne_direccion:s,exoneracion_114_1,ne_metodo_pago:s,fev_api_key', True, True);
   P('CrearEmpresa', 'nit_empresa:s,razon_social!:s,pais_codigo:s,moneda_codigo:s,grupo_niif:i,decimales:i,anio_fiscal_mes!:i,sembrar:b,responsable_iva:b,admin_login:s,admin_nombre:s,admin_email:s,admin_password', True, True);
   P('GetSaldoIA', '', True, True);
   P('RecargarIA', 'monto_usd:n', True, True);
@@ -107,7 +107,7 @@ begin
   P('DeleteCuenta', 'codigo!:s', True, True);
   P('GetTerceros', 'buscar:s,es_cliente:b,es_proveedor:b,page:i,page_size:i', True, True);
   P('GetTercero', 'tipo_id:s,numero_id:s', True, True);
-  P('SaveTercero', 'tipo_id!:s,numero_id!:s,digito_verif:s,razon_social!:s,nombre_comercial:s,es_cliente:b,es_proveedor:b,es_empleado:b,roles_aditivos:b,email:s,telefono:s,direccion:s,ciudad:s,pais_codigo:s,tipo_persona:s,lista_precio_id:i,descuento_pct_habitual:n,dias_credito:i,limite_credito:n,municipio_dane:s', True, True);
+  P('SaveTercero', 'tipo_id!:s,numero_id!:s,digito_verif:s,razon_social!:s,nombre_comercial:s,es_cliente:b,es_proveedor:b,es_empleado:b,roles_aditivos:b,email:s,telefono:s,direccion:s,ciudad:s,pais_codigo:s,tipo_persona:s,lista_precio_id:i,descuento_pct_habitual:n,dias_credito:i,limite_credito:n,municipio_dane:s,departamento:s,cuenta_gasto_defecto:s', True, True);
   P('GetTerceroSucursales', 'tipo_id!:s,numero_id!:s,solo_activas:b', True, True);
   P('SaveTerceroSucursal', 'tipo_id!:s,numero_id!:s,codigo!:s,nombre!:s,direccion:s,ciudad:s,departamento:s,telefono:s,email:s,activo:b', True, True);
   P('DeleteTerceroSucursal', 'tipo_id!:s,numero_id!:s,codigo!:s', True, True);
@@ -159,7 +159,7 @@ begin
   P('SaveTRM', 'moneda_codigo!:s,fecha!:s,tasa!:n,fuente:s', True, True);
   P('DeleteTRM', 'moneda_codigo:s,fecha:s', True, True);
   P('GetTRMVigente', 'moneda_codigo!:s,fecha:s', True, True);
-  P('AjusteDiferenciaCambio', 'anio!:i,mes!:i,comp_tipo!:s', True, True);
+  P('AjusteDiferenciaCambio', 'anio:i,mes!:i,comp_tipo:s,simular:b', True, True);
   P('ImportarTRMBanRep', 'fecha_desde:s,fecha_hasta:s', True, True);
   P('RPT_Dashboard', 'anio:i,mes:i', True, True);
   P('ImportarComprobantes', 'comprobantes:a', True, True);
@@ -185,7 +185,7 @@ begin
   P('ImportarPresupuesto', 'filas:a', True, True);
   P('RPT_PresupuestoVsReal', 'anio:i,mes_hasta:i', True, True);
   P('GetConciliaciones', '', True, False);
-  P('IniciarConciliacion', 'cuenta_codigo:s,anio:i,mes:i,saldo_extracto:n', True, True);
+  P('IniciarConciliacion', 'cuenta_codigo!:s,anio:i,mes!:i,saldo_extracto:n', True, True);
   P('GetMovtosConciliacion', 'conciliacion_id:i', True, True);
   P('MarcarMovtoConciliado', 'conciliacion_id!:i,comp_tipo:s,comp_numero:i,linea:i,conciliado:b', True, True);
   P('GetExtractoItems', 'conciliacion_id!:i', True, True);
@@ -231,7 +231,7 @@ begin
   P('DeleteFEResolucion', 'id!:i', True, True);
   P('GetEventosRadian', 'cufe!:s', True, True);
   P('GetNotasReferencia', 'cufe!:s', True, True);
-  P('GetAdquirienteFEV', 'nit!:s,tipo_id:s', True, True);
+  P('GetAdquirienteFEV', 'nit:s,numero_id:s,tipo_id:s', True, True);
   P('ProcesarPendientesFE', '', False, True);
   P('GetDocumentosParaEmitirFE', '', False, True);
   P('GetResumenFEVentas', '', True, False);
@@ -261,7 +261,7 @@ begin
   P('GetDashboardNomina', 'anio:i', True, True);
   P('LiquidarNomina', 'anio:i,mes:i', True, True);
   P('GetNominaDetalle', 'nomina_id:i', True, True);
-  P('UpdateNominaEmpleado', 'nomina_id:i,empleado_tipo_id:s,empleado_numero_id:s,horas_extras:n,otros_devengados:n,otras_deducciones:n', True, True);
+  P('UpdateNominaEmpleado', 'nomina_id:i,empleado_tipo_id:s,empleado_numero_id:s,horas_extras:n,otros_devengados:n,otras_deducciones:n,horas', True, True);
   P('ContabilizarNomina', 'nomina_id:i', True, True);
   P('LiquidarProvisiones', 'anio!:i,mes!:i', True, True);
   P('GetProvisiones', 'anio:i,mes:i', True, True);
@@ -277,9 +277,9 @@ begin
   P('DeleteEmpConcepto', 'id!:i,nomina_id:i,empleado_tipo_id:s,empleado_numero_id:s', True, True);
   P('GetCategoriasInv', '', True, True);
   P('SaveCategoriaInv', 'id:i,nombre!:s,codigo_padre:i', True, True);
-  P('GetArticulos', 'buscar:s,tipo:s,activo:b', True, True);
+  P('GetArticulos', 'buscar:s,tipo:s,activo:b,vista:s,limite:i', True, True);
   P('GetArticulo', 'codigo!:s', True, True);
-  P('SaveArticulo', 'codigo!:s,nombre!:s,tipo:s,unidad_medida:s,metodo_costeo:s,maneja_inventario:b,bodega_codigo:s,precio_venta_default:n,impuesto_pct:n,tarifa_iva:s,categoria_id:i,cuenta_inventario:s,cuenta_costo_ventas:s,cuenta_ventas:s,unidades:a', True, True);
+  P('SaveArticulo', 'codigo!:s,nombre!:s,tipo:s,unidad_medida:s,metodo_costeo:s,maneja_inventario:b,bodega_codigo:s,precio_venta_default:n,impuesto_pct:n,tarifa_iva:s,categoria_id:i,cuenta_inventario:s,cuenta_costo_ventas:s,cuenta_ventas:s,unidades:a,impuestos:a,descripcion:s,compatibilidad:a', True, True);
   P('DeleteArticulo', 'codigo!:s', True, True);
   P('GetBodegas', 'solo_activas:b', True, True);
   P('SaveBodega', 'codigo!:s,nombre!:s,responsable:s,activa:b', True, True);
@@ -302,7 +302,7 @@ begin
   P('SaveConfigInventario', 'cuenta_inventario_default:s,cuenta_costo_ventas_default:s,cuenta_ajuste_inventario:s,bodega_default:s,tipo_comprobante_ajuste:s,permite_saldo_negativo:b,cuenta_ajuste_faltante:s,cuenta_ajuste_sobrante:s,cuenta_productos_proceso:s,tipo_comprobante_produccion:s', True, True);
   P('GetDocumentosVenta', 'tipo_doc:s,estado:s,fecha_desde:s,fecha_hasta:s,tercero:s,fe_estado:s,con_saldo:b', True, True);
   P('GetDocumentoVenta', 'id!:i', True, True);
-  P('SaveDocumentoVenta', 'id:i,tipo_doc:s,fecha:s,fecha_vencimiento:s,tercero_tipo_id:s,tercero_numero_id:s,ref_externa:s,centro_operacion_codigo:s,sucursal_codigo:s,moneda_codigo:s,notas:s,descripcion:s,vendedor_login:s,items:a,pagos:a,ref_documento_id:i,ref_fe_numero:s,ref_fe_cufe:s,ref_fe_fecha:s,fe_concepto_nota:i,devuelve_mercancia:b', True, True);
+  P('SaveDocumentoVenta', 'id:i,tipo_doc:s,fecha:s,fecha_vencimiento:s,tercero_tipo_id:s,tercero_numero_id:s,ref_externa:s,centro_operacion_codigo:s,sucursal_codigo:s,moneda_codigo:s,notas:s,descripcion:s,vendedor_login:s,items:a,pagos:a,ref_documento_id:i,ref_fe_numero:s,ref_fe_cufe:s,ref_fe_fecha:s,fe_concepto_nota:i,devuelve_mercancia:b,incoterm:s,exportacion', True, True);
   P('AnularDocumentoVenta', 'id!:i,motivo:s', True, True);
   P('FacturarDocumento', 'id!:i', True, True);
   P('FacturarVenta', 'id!:i,comp_tipo:s', True, True);
@@ -343,7 +343,7 @@ begin
   P('ReembolsoAnticipoAP', 'tipo_id:s,numero_id:s,valor:n,cuenta_banco_codigo!:s,fecha:s,notas:s', True, True);
   P('GetAPFacturas', 'estado:s,tercero:s,vencidas:b', True, True);
   P('GetAPFactura', 'id!:i', True, True);
-  P('SaveAPFactura', 'id:i,tercero_tipo_id:s,tercero_numero_id:s,numero_factura_proveedor:s,fecha_factura:s,fecha_vencimiento:s,concepto:s,ref_externa:s,centro_operacion_codigo:s,sucursal_codigo:s,items:a,es_documento_soporte:b,ds_procedencia:s,ds_tipo:s,ref_ap_factura_id:i,fe_concepto_nota:i,es_nota_credito:b', True, True);
+  P('SaveAPFactura', 'id:i,tercero_tipo_id:s,tercero_numero_id:s,numero_factura_proveedor:s,fecha_factura:s,fecha_vencimiento:s,fecha_contable:s,concepto:s,ref_externa:s,centro_operacion_codigo:s,sucursal_codigo:s,items:a,es_documento_soporte:b,ds_procedencia:s,ds_tipo:s,ds_tipo_generacion:i,ref_ap_factura_id:i,moneda_codigo:s,fe_concepto_nota:i,es_nota_credito:b,cufe_proveedor:s,retenciones_detalle', True, True);
   P('AprobarAPFactura', 'id!:i', True, True);
   P('ContabilizarAPFactura', 'id!:i,comp_tipo:s', True, True);
   P('AnularAPFactura', 'id!:i,motivo:s', True, True);
@@ -351,7 +351,7 @@ begin
   P('SaveAPPago', 'id:i,fecha:s,forma_pago:s,cuenta_banco_codigo:s,numero_referencia:s,notas:s,facturas:a', True, True);
   P('ContabilizarAPPago', 'id!:i,comp_tipo:s', True, True);
   P('GetConfigAP', '', True, False);
-  P('SaveConfigAP', 'tipo_comprobante_factura_proveedor:s,tipo_comprobante_pago:s,cuenta_proveedores:s,cuenta_anticipos_proveedores:s,dias_alerta_vencimiento:i,cuenta_recibido_por_facturar:s', True, True);
+  P('SaveConfigAP', 'tipo_comprobante_factura_proveedor:s,tipo_comprobante_pago:s,cuenta_proveedores:s,cuenta_anticipos_proveedores:s,dias_alerta_vencimiento:i,cuenta_recibido_por_facturar:s,iva_compras_tratamiento:s,recibidos_retenciones_origen:s', True, True);
   P('GetCajas', '', True, True);
   P('SaveCaja', 'codigo!:s,nombre!:s,tipo:s,moneda_codigo:s,cuenta_contable:s,banco_nombre:s,numero_cuenta:s,tipo_cuenta:s,saldo_inicial:n,saldo_actual:n,activa:b', True, True);
   P('GetMovimientosTesoreria', 'caja_codigo:s,fecha_desde:s,fecha_hasta:s,estado:s', True, True);
@@ -373,7 +373,7 @@ begin
   P('SaveConfigCobranza', 'dias_antes_vencimiento:s,dias_despues_vencimiento:s,plantilla_email_previo:s,plantilla_email_vencido:s,activo:b', True, True);
   P('EnviarRecordatorios', '', True, False);
   P('GetRecibosCaja', 'tercero_numero_id:s,fecha_desde:s,fecha_hasta:s,estado:s', True, True);
-  P('SaveReciboCaja', 'id:i,tercero_tipo_id:s,tercero_numero_id!:s,tercero_nombre:s,fecha!:s,concepto:s,valor_total!:n,ref_externa:s,centro_operacion_codigo:s,forma_pago:s,banco:s,numero_cheque:s,referencia:s,cuenta_caja:s,es_anticipo:b,aplicaciones:a', True, True);
+  P('SaveReciboCaja', 'id:i,tercero_tipo_id:s,tercero_numero_id!:s,tercero_nombre:s,fecha!:s,concepto:s,valor_total:n,ref_externa:s,centro_operacion_codigo:s,forma_pago:s,banco:s,numero_cheque:s,referencia:s,cuenta_caja:s,es_anticipo:b,retenciones:a,aplicaciones:a', True, True);
   P('ContabilizarRecibo', 'id!:i,comp_tipo:s', True, True);
   P('AnularRecibo', 'id!:i', True, True);
   P('GetAcuerdosPago', 'tercero_numero_id:s,estado:s,fecha_desde:s,fecha_hasta:s', True, True);
@@ -423,7 +423,7 @@ begin
   P('SaveListaPrecioDetalle', 'lista_id:i,detalle:a', True, True);
   P('GetCondicionesCliente', 'tipo_id:s,numero_id:s', True, True);
   P('GetConfigVentas', '', True, False);
-  P('SaveConfigVentas', 'tipo_comprobante_factura,tipo_comprobante_venta:s', False, True);
+  P('SaveConfigVentas', 'tipo_comprobante_factura,tipo_comprobante_venta:s,pos_documento', False, True);
   P('GetFormasPago', 'tipo:s,solo_activas:b', False, True);
   P('SaveFormaPago', 'id:i,nombre!:s,tipo:s,cuenta_codigo!:s,maneja_vencimiento:b,dias_vencimiento:i,activa:b,orden:i,medio_pago_dian:s', True, True);
   P('ToggleFormaPago', 'id!:i,activa:b', True, True);

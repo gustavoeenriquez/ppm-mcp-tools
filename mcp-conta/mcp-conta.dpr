@@ -56,7 +56,7 @@ begin
       MCPServer := TAiMCPStdioServer.Create(nil);
 
     MCPServer.ServerName         := 'mcp-conta';
-    MCPServer.ServerVersion := '1.1.2';
+    MCPServer.ServerVersion := '1.1.3';
     MCPServer.Port               := Port;
     MCPServer.CorsEnabled        := True;
     MCPServer.CorsAllowedOrigins := '*';
