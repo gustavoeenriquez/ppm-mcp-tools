@@ -107,7 +107,7 @@ begin
     M('ImportarPucMaestro', 'Importa cuentas del PUC maestro a la empresa en sesión Params: { pais: string, nivel_max: integer (1-4) } Retorna: { cuentas_importadas: integer }', True),
     M('GetPlanCuentas', 'Retorna el plan de cuentas con estructura jerárquica Params: { solo_activas: bool, acepta_movto: bool, nivel_max: int, buscar: string }', False),
     M('GetCuenta', 'Retorna una cuenta por código Params: { codigo: string }', False),
-    M('SaveCuenta', 'Crea o actualiza una cuenta nivel, codigo_padre y tipo_cuenta se derivan del codigo si no se envian. es_nuevo = true rechaza el guardado si el codigo ya existe. Params: { codigo, nombre, tipo_cuenta, codigo_padre, es_nuevo, acepta_movto, requiere_tercero, requiere_centro_costo, requiere_documento, activa }', True),
+    M('SaveCuenta', 'Crea o actualiza una cuenta del plan de cuentas. nivel, codigo_padre y tipo_cuenta se derivan del codigo si no se envian. es_nuevo = true rechaza el guardado si el codigo ya existe. Params: { codigo, nombre, tipo_cuenta, codigo_padre, es_nuevo, acepta_movto, requiere_tercero, requiere_centro_costo, requiere_documento, activa }', True),
     M('DeleteCuenta', 'Desactiva una cuenta (soft delete — solo si no tiene movimientos) Params: { codigo: string }', True)
   ];
 
@@ -118,7 +118,7 @@ begin
   GModules[3].Methods := [
     M('GetTerceros', 'Lista terceros con filtro opcional Params: { buscar: string, es_cliente: bool, es_proveedor: bool, page: int, page_size: int }', False),
     M('GetTercero', 'Retorna un tercero por tipo_id + numero_id Params: { tipo_id: string, numero_id: string }', False),
-    M('SaveTercero', 'Crea o actualiza tercero Params: { tipo_id, numero_id, digito_verif, razon_social, es_cliente, es_proveedor, email, telefono, direccion, ciudad, pais_codigo }', True),
+    M('SaveTercero', 'Crea o actualiza tercero. responsabilidades_fiscales = casilla 53 del RUT (sin O-13/O-15/O-23/O-47 queda R-99-PN; 48/49 fijan el IVA); contactos = personas de contacto, el representante legal como principal. Params: { tipo_id, numero_id, digito_verif, razon_social, es_cliente, es_proveedor, email, telefono, direccion, ciudad, pais_codigo, contactos?: [{ nombre, cargo?, email?, telefono?, principal?, recibe_facturas? }] }', True),
     M('GetTerceroSucursales', 'Un tercero sin sucursales se comporta como siempre: son opcionales. Existen porque Siigo las modela y hasta la 070 se perdian al migrar. Lista las sucursales de un tercero. Params: { tipo_id, numero_id, solo_activas?: bool = true }', False),
     M('SaveTerceroSucursal', 'Crea o actualiza una sucursal. Params: { tipo_id, numero_id, codigo, nombre, direccion?, ciudad?, departamento?, telefono?, email?, activo? }', True),
     M('DeleteTerceroSucursal', 'Desactiva una sucursal (soft-delete: puede estar referenciada por documentos) Params: { tipo_id, numero_id, codigo }', True)
@@ -139,7 +139,7 @@ begin
     M('GetComprobante', 'Retorna un comprobante con sus movimientos Params: { tipo_codigo: string, numero: int }', False),
     M('SaveComprobante', 'Guarda comprobante (cabecera + movimientos) El comprobante queda en estado BORRADOR Valida: débitos = créditos Params: { tipo_codigo, fecha, descripcion, ref_tipo, ref_numero, centro_operacion_codigo?, movimientos: [ { linea, cuenta_codigo, tercero_tipo_id, tercero_numero_id, centro_costo_codigo, debito, credito, descripcion, base_impuesto, documento_ref } ] } documento_ref es obligatorio en cuentas con requiere_documento = TRUE centro_operacion_codigo es obligatorio si con_empresas.co_obligatorio', True),
     M('ContabilizarComprobante', 'Contabiliza un comprobante (BORRADOR → CONTABILIZADO) Actualiza tabla con_saldos. Valida período abierto. Params: { tipo_codigo: string, numero: int }', True),
-    M('AnularComprobante', 'Anula un comprobante (CONTABILIZADO → ANULADO) Revierte los saldos. Params: { tipo_codigo: string, numero: int }', True),
+    M('AnularComprobante', 'Anula un comprobante en BORRADOR o CONTABILIZADO (queda ANULADO); si estaba contabilizado revierte los saldos, un borrador nunca los movio. Params: { tipo_codigo: string, numero: int }', True),
     M('RevisarComprobante', 'Marca un comprobante BORRADOR como REVISADO (requiere rol admin o aprobador) Params: { tipo_codigo, numero, comentario? }', True),
     M('RechazarComprobante', 'Rechaza un comprobante REVISADO → vuelve a BORRADOR Params: { tipo_codigo, numero, motivo }', True)
   ];
@@ -188,7 +188,7 @@ begin
     M('RPT_PyGCentroCosto', 'Estado de Resultados (P&G) desglosado por Centro de Costo Params: { anio, mes_desde, mes_hasta } Returns: filas planas { cc_codigo, cc_nombre, cuenta_codigo, cuenta_nombre, nivel, naturaleza, debitos, creditos, saldo } Solo cuentas clase R (resultado). El FE las pivotea por CC.', False)
   ];
 
-  // Reportes contables (22 ops)
+  // Reportes contables (25 ops)
   GModules[8].Tool := 'conta_reportes';
   GModules[8].Title := 'Reportes contables';
   GModules[8].Desc := 'Balance, PyG (tambien por centro de operacion), auxiliares, libros oficiales, libro de IVA, libro por tercero, analisis horizontal e inventario contra contabilidad';
@@ -214,6 +214,9 @@ begin
     M('RPT_LibroTercero', 'Movimientos con saldo acumulado filtrados por tercero y rango de cuentas Params: { anio, mes_desde, mes_hasta, cuenta_desde?, cuenta_hasta?, tercero_id? }', False),
     M('RPT_BalanceComprobacion', 'Balance de Comprobación agrupado por niveles configurables Params: { anio, mes_desde, mes_hasta, niveles: string (e.g. "cuenta,tercero,centro_costo") } niveles puede ser cualquier combinación/orden de: cuenta | tercero | centro_costo | centro_operacion', False),
     M('RPT_AnalisisHorizontal', 'Compara movimientos (débito/crédito) de dos períodos y calcula variaciones Params: { anio_a, mes_desde_a, mes_hasta_a, anio_b, mes_desde_b, mes_hasta_b }', False),
+    M('RPT_NotasEEFF', 'Notas NIIF para Pymes calculadas por el ERP: mapeo PUC a notas (el estandar o el de la empresa), cuadros comparativos con variaciones significativas, auditoria (A1 integridad, A2 ecuacion, A3 resultado, A4 notas vs estados, A5 cuentas sin clasificar, A7 resultado vs patrimonio), alertas y el texto guardado de cada nota. Las cifras ya vienen con el signo de presentacion: no recalcular nada. Params: { anio, mes, resultados?: ''acumulado''|''mes'', comparativo?: ''anio_anterior''|''mes_anterior'', comp_anio?, comp_mes?, umbral_pct?, umbral_valor?, umbral_pct_nota? } Returns: { empresa, corte, corte_comparativo, resultados, resumen, notas[{numero, clave, titulo, estado, renglones[{concepto, cuenta, actual, comparativo, var_valor, var_pct}], total_actual, total_comparativo, variaciones_significativas, texto}], sin_clasificar, auditoria, alertas }', False),
+    M('NotasEEFF_GuardarTexto', 'Guarda el texto (parrafo) de una nota a los estados financieros para un corte. clave = la de la nota en CON_RPT_NotasEEFF. Texto vacio = borrarlo. origen ''ia'' cuando lo redacta el asistente; aprobado lo marca la persona. Params: { anio, mes, clave, texto, origen?: ''persona''|''ia'', aprobado?: boolean }', True),
+    M('NotasEEFF_GetMapeo', 'Mapeo de cuentas a notas de la empresa: el propio o, si no tiene, el estandar. Devuelve tambien el estandar (para restaurar) y los umbrales. Returns: { mapeo, propio, umbrales, estandar, updated_at, updated_by }', False),
     M('RPT_InventarioContabilidad', 'Inventario contra contabilidad (098): por cuenta de inventario, el valor del kardex frente al saldo contable, con el detalle por articulo. Params: {} -> { cuentas: [...], articulos: [...] }', False)
   ];
 
@@ -319,7 +322,7 @@ begin
     M('DeleteFEResolucion', 'Desactiva (soft-delete) una resolución DIAN Params: { id: int }', True),
     M('GetEventosRadian', 'Retorna eventos RADIAN de una factura electronica (circulacion, factoring, etc.) Params: { cufe: string } Returns: { status_code, eventos: [{eventCode, issueDate, senderParty, isValid, cuds}] }', False),
     M('GetNotasReferencia', 'Retorna si existen notas credito/debito asociadas en DIAN para un CUFE Params: { cufe: string } Returns: { is_valid, status_code, status_description }', False),
-    M('GetAdquirienteFEV', 'Retorna datos del adquiriente registrado en DIAN (para autocompletar cliente) Params: { nit: string, tipo_id?: string } tipo_id default "31" (NIT) Returns: { status_code, receiver_name?, receiver_email? }', False),
+    M('GetAdquirienteFEV', 'Retorna datos del adquiriente registrado en DIAN (para autocompletar cliente) Params: { nit | numero_id, tipo_id?: string } tipo_id: codigo ERP (NIT, CC...) o DIAN (31, 13...), default "31" Returns: { status_code: "00" encontrado | "01" sin datos, message?, receiver_name?, receiver_email? }', False),
     M('ProcesarPendientesFE', 'Procesa en lote todos los docs FE en estado PENDIENTE/EMITIDA: consulta FEVs y actualiza estado en BD Returns: { actualizados: int, aceptados: int, errores: int }', True),
     M('GetDocumentosParaEmitirFE', 'Lista facturas en estado FACTURADO que aun no tienen FE emitida Params: { limit?: int } default 50 Returns: [{id, numero, fecha, total, tercero_numero_id, razon_social}]', False),
     M('GetResumenFEVentas', 'Alertas de facturacion electronica de ventas (de toda la empresa) Returns: { pendientes, rechazadas, sin_correo }', False)
@@ -351,23 +354,23 @@ begin
     M('EmitirAjusteNomina', 'Nomina de ajuste: reemplazar / eliminar (migracion 085)', True),
     M('GetParametrosLegales', 'Salario minimo, auxilio de transporte... por año, con su norma (084)', False),
     M('GetEmpleados', '', False),
-    M('SaveEmpleado', 'Params: { tipo_id, numero_id, nombres, apellidos, cargo, fecha_ingreso, salario_basico, tipo_contrato, cuenta_salarios, cuenta_prestaciones, cuenta_aportes_emp, cuenta_pagar_emp, cuenta_pagar_seg, activo }', True),
+    M('SaveEmpleado', 'Crea o actualiza un empleado (vinculacion). Lo que no se mande se conserva; en uno nuevo las cuentas contables se copian del ultimo empleado de la empresa: NO mandar cuentas salvo que el usuario las de. Params: { tipo_id (CC|CE|PA...), numero_id, nombres, apellidos, cargo, fecha_ingreso (YYYY-MM-DD), salario_basico (mensual), tipo_contrato (INDEFINIDO|FIJO|OBRA|APRENDIZ), nivel_riesgo_arl (clase de riesgo ARL 1-5), salario_integral?, activo?, cuenta_salarios?, cuenta_prestaciones?, cuenta_aportes_emp?, cuenta_pagar_emp?, cuenta_pagar_seg? }', True),
     M('ImportarEmpleados', 'Importa empleados desde Excel (UPSERT por tipo_id+numero_id) Params: { empleados: [{tipo_id, numero_id, nombres, apellidos, cargo?, fecha_ingreso, tipo_contrato, salario_basico, dias_trabajados_mes?, cuenta_salarios, cuenta_prestaciones, cuenta_aportes_emp, cuenta_pagar_emp, cuenta_pagar_seg}] } Returns: { guardados: int, errores: [{indice, mensaje}] }', True),
     M('GetNovedades', 'Params: { anio, mes, empleado_tipo_id?, empleado_numero_id? }', False),
-    M('SaveNovedad', 'Params: { id?, anio, mes, empleado_tipo_id, empleado_numero_id, tipo_novedad, dias, descripcion }', True),
+    M('SaveNovedad', 'Novedad de AUSENCIA del mes, en dias: INCAPACIDAD y LICENCIA_NP descuentan dias al liquidar; VACACIONES y OTRO son informativas. Las horas extras NO son novedad: van con UpdateNominaEmpleado (horas por tipo y cantidad). Params: { id?, anio, mes, empleado_tipo_id, empleado_numero_id, tipo_novedad (INCAPACIDAD|LICENCIA_NP|VACACIONES|OTRO), dias, descripcion }', True),
     M('DeleteNovedad', 'Params: { id }', True),
     M('GetDescuentos', 'Params: { empleado_tipo_id, empleado_numero_id, solo_activos? }', False),
     M('SaveDescuento', 'Params: { id?, empleado_tipo_id, empleado_numero_id, tipo_descuento, descripcion, valor_mensual, activo, fecha_inicio, fecha_fin? }', True),
     M('DeleteDescuento', 'Params: { id }', True),
     M('GetNominas', '', False),
     M('GetDashboardNomina', 'Dashboard KPIs de nómina Params: { anio } Returns: { meses:[{mes,mes_nombre,devengado,aportes_emp,costo_total,empleados}], total_anio_devengado, total_anio_aportes, total_anio_costo, top_cargos:[{cargo,costo_total,empleados}], promedio_mensual }', False),
-    M('LiquidarNomina', 'Crea una nómina en borrador con los empleados activos y calcula aportes Params: { anio, mes, smmlv (salario mínimo vigente) } Returns: { id, total_devengado, total_deducciones, total_neto, total_aportes_emp }', True),
+    M('LiquidarNomina', 'Liquida la nomina del mes en borrador con los empleados activos: salario, auxilio, deducciones y aportes. Una sola por mes (si ya existe devuelve su nomina_id). SMMLV y auxilio salen de los parametros legales. Las horas extras se cargan DESPUES, por empleado, con UpdateNominaEmpleado. Params: { anio, mes } Returns: { id, total_devengado, total_deducciones, total_neto, total_aportes_emp }', True),
     M('GetNominaDetalle', 'Detalle de empleados de una nómina Params: { nomina_id }', False),
-    M('UpdateNominaEmpleado', 'Actualiza valores de un empleado en la nómina (horas extras, otros, etc.) Params: { nomina_id, empleado_tipo_id, empleado_numero_id, horas_extras, otros_devengados, otras_deducciones }', True),
+    M('UpdateNominaEmpleado', 'Horas extras y recargos de un empleado en una nomina en BORRADOR, y recalcula. Las horas van por CANTIDAD y tipo en ''horas''; el valor lo calcula el servidor con la jornada y los recargos de ley (nunca mandar pesos en horas_extras). Tipos: HED extra diurna, HEN extra nocturna, HRN recargo nocturno, HEDDF/HENDF extra dominical o festiva diurna/nocturna, HRDDF/HRNDF recargo dominical o festivo diurno/nocturno. Params: { nomina_id, empleado_tipo_id, empleado_numero_id, horas:[{tipo, cantidad}], otros_devengados? (pesos), otras_deducciones? (pesos) }', True),
     M('ContabilizarNomina', 'Contabiliza la nómina: genera comprobante NOM Params: { nomina_id }', True),
     M('LiquidarProvisiones', 'Calcula/recalcula provisiones del mes a partir de la nómina liquidada Params: { anio, mes } Returns: { status, total_empleados, total_provisiones }', True),
     M('GetProvisiones', 'Lista provisiones — Params: { anio, mes? }', False),
-    M('ContabilizarProvisiones', 'Contabiliza las provisiones del mes — Params: { anio, mes, comp_tipo }', True),
+    M('ContabilizarProvisiones', 'Contabiliza las provisiones del mes. Se liquidan antes con LiquidarProvisiones. Params: { anio, mes, comp_tipo? (NOM) }', True),
     M('GetAcumuladoNomina', 'Totales por empleado agrupados por mes — Params: { anio, empleado_tipo_id?, empleado_numero_id? }', False),
     M('GetCertificado220', 'Params: { anio, empleado_tipo_id, empleado_numero_id }', False),
     M('LiquidacionDefinitiva', 'Calcula liquidación al retirar un empleado Params: { empleado_tipo_id, empleado_numero_id, fecha_retiro, causa_retiro }', False),
@@ -447,13 +450,13 @@ begin
   GModules[19].Methods := [
     M('GetOrdenesCompra', 'Params: { estado?, fecha_desde?, fecha_hasta? }', False),
     M('GetOrdenCompra', 'Params: { id }', False),
-    M('SaveOrdenCompra', 'Params: { id?, fecha, proveedor_tipo_id?, proveedor_numero_id?, proveedor_nombre?, fecha_entrega?, terminos_pago?, notas?, sc_id?, items[] }', True),
-    M('EnviarOrdenCompra', 'Params: { id }', True),
+    M('SaveOrdenCompra', 'Crea o actualiza una orden de compra con sus items (queda en BORRADOR) Params: { id?, fecha, proveedor_tipo_id?, proveedor_numero_id?, proveedor_nombre?, fecha_entrega?, terminos_pago?, notas?, sc_id?, items[] }', True),
+    M('EnviarOrdenCompra', 'Envia la orden de compra al proveedor: pasa de BORRADOR a ENVIADA y ya no se edita Params: { id }', True),
     M('CancelarOrdenCompra', 'Params: { id }', True),
     M('CrearOCdesdeSC', 'Params: { sc_id } — crea OC desde SC aprobada y marca SC como CONVERTIDA', True),
     M('GetRecepcionesByOC', 'Params: { oc_id }', False),
     M('GetRecepcion', 'Params: { id }', False),
-    M('SaveRecepcion', 'Params: { oc_id, fecha, notas?, items:[{oc_item_id, cantidad_recibida, notas_item?}] }', True),
+    M('SaveRecepcion', 'Registra la mercancia recibida de una orden de compra: entra al inventario y hace el asiento Params: { oc_id, fecha, notas?, items:[{oc_item_id, descripcion, cantidad_recibida, notas_item?}] } descripcion: la del item de la orden (no la usa el servidor; es para que quien aprueba sepa que recibe)', True),
     M('GetFacturasProveedor', 'Params: { estado?, fecha_desde?, fecha_hasta?, oc_id? }', False),
     M('GetFacturaProveedor', 'Params: { id }', False),
     M('SaveFacturaProveedor', 'Params: { id?, fecha, proveedor_tipo_id?, proveedor_numero_id?, proveedor_nombre?, oc_id?, numero_factura_prov?, fecha_vencimiento?, subtotal, iva, total, notas?, items[] }', True),
@@ -473,7 +476,7 @@ begin
     M('ReembolsoAnticipoAP', 'El proveedor devuelve el dinero. Params: { tipo_id, numero_id, valor, cuenta_banco_codigo, fecha?, notas? }', True),
     M('GetAPFacturas', 'Lista facturas de proveedores con filtros opcionales Params: { estado?, tercero?, vencidas? }', False),
     M('GetAPFactura', 'Retorna una factura de proveedor con sus ítems Params: { id: int }', False),
-    M('SaveAPFactura', 'Crea o actualiza una factura de proveedor (cabecera + ítems) Params: { id?, tercero_tipo_id, tercero_numero_id, numero_factura_proveedor, fecha_factura, fecha_vencimiento, concepto?, ref_externa?, centro_operacion_codigo?, items:[{linea, descripcion, cuenta_gasto?, articulo_codigo?, cantidad, valor_unitario, impuesto_pct, retencion_pct}] } ref_externa hace la llamada idempotente (HIS): editable se actualiza, contabilizada/pagada se devuelve tal cual. Un item con articulo_codigo y sin cuenta_gasto debita la cuenta de INVENTARIO (la del articulo o la default de config inventario) — el kardex lo escribe CON_SaveEntradaInventario por el mismo valor.', True),
+    M('SaveAPFactura', 'Crea o actualiza una factura de proveedor (cabecera + ítems) Params: { id?, tercero_tipo_id, tercero_numero_id, numero_factura_proveedor, fecha_factura, fecha_vencimiento, concepto?, ref_externa?, centro_operacion_codigo?, items:[{linea, descripcion, cuenta_gasto?, articulo_codigo?, cantidad, valor_unitario, impuesto_pct, retencion_pct}] } ref_externa hace la llamada idempotente (HIS): editable se actualiza, contabilizada/pagada se devuelve tal cual. Un item con articulo_codigo y sin cuenta_gasto debita la cuenta de INVENTARIO (la del articulo o la default de config inventario) — el kardex lo escribe CON_SaveEntradaInventario por el mismo valor. (101) retenciones_detalle?: [{codigo, base?}] del catalogo con_retenciones (reemplaza a retencion_pct por linea); items[].impuestos?: [codigos de con_impuestos]. Sin retenciones_detalle todo funciona como antes.', True),
     M('AprobarAPFactura', 'Aprueba una factura de proveedor (RECIBIDA/REVISADA → APROBADA) Params: { id: int }', True),
     M('ContabilizarAPFactura', 'Contabiliza una factura de proveedor: genera comprobante contable Params: { id: int, comp_tipo: string }', True),
     M('AnularAPFactura', 'Anula una factura de proveedor (solo si no está contabilizada) Params: { id: int, motivo? }', True),

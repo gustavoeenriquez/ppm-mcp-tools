@@ -87,9 +87,12 @@ for n in metodos:
 # --- validacion contra el JSON ----------------------------------------------
 asignados = [n for mod in CFG['modulos'] for n in mod['metodos']]
 dup = sorted({n for n in asignados if asignados.count(n) > 1})
-sin = [n for n in metodos if n not in asignados]
+# sin_exponer: metodos que el MCP aun NO ofrece a proposito (nuevos del ERP sin
+# revisar). Se listan para que el script no falle; asignarlos a un modulo los expone.
+sin_exponer = CFG.get('sin_exponer', [])
+sin = [n for n in metodos if n not in asignados and n not in sin_exponer]
 fantasmas = [n for n in asignados if n not in docs]
-for n in list(lect) + list(escr):
+for n in list(lect) + list(escr) + list(sin_exponer):
     if n not in docs:
         fantasmas.append(n + ' (excepciones)')
 if dup or sin or fantasmas:
