@@ -185,6 +185,7 @@ Built with **Delphi 12 Athens** targeting Win64 and Linux64 (89 tools ship both 
 | [mcp-maps](./mcp-maps/) | Geocoding and place search via OpenStreetMap Nominatim (free, no API key) | Win64 + Linux64 | `ppm install mcp-maps` |
 | [mcp-rss](./mcp-rss/) | RSS 2.0 and Atom feed reader — fetch, latest N items, search | Win64 + Linux64 | `ppm install mcp-rss` |
 | [mcp-wikipedia](./mcp-wikipedia/) | Wikipedia article search and retrieval via REST API (free, no API key) | Win64 + Linux64 | `ppm install mcp-wikipedia` |
+| [mcp-openverse](./mcp-openverse/) | Openly licensed images and audio (CC / public domain) via Openverse — search with licence filters, details, related, download with licence manifest, ready-made credits (free, no API key) | Win64 + Linux64 | `ppm install mcp-openverse` |
 | [mcp-currency](./mcp-currency/) | Currency exchange rates and conversion via open.er-api.com (free, no API key) | Win64 + Linux64 | `ppm install mcp-currency` |
 | [mcp-calculator](./mcp-calculator/) | Evaluate mathematical expressions — arithmetic, exponentiation, common functions | Win64 + Linux64 | `ppm install mcp-calculator` |
 | [mcp-datetime](./mcp-datetime/) | Parse and reformat datetime strings across timezones and formats | Win64 + Linux64 | `ppm install mcp-datetime` |
