@@ -340,7 +340,9 @@ begin
   try
     if V is TJSONObject then
       Result := TJSONObject(V).GetValue<string>('detail', '');
-    if Result = '' then
+    if (Result = '') and ABody.TrimLeft.StartsWith('<') then
+      Result := '(HTML error page from the server; try again later)'
+    else if Result = '' then
       Result := Copy(ABody, 1, 200);
   finally
     V.Free;
@@ -376,6 +378,14 @@ begin
 
       if (Resp.StatusCode = 401) and (Tok <> '') and (Attempt = 1) then
         Continue;
+
+      // Openverse devuelve 500 intermitentes (verificado 2026-11-18: la misma
+      // URL da 500 y luego 200). Es GET idempotente: un solo reintento.
+      if (Resp.StatusCode >= 500) and (Attempt = 1) then
+      begin
+        Sleep(1500);
+        Continue;
+      end;
 
       if Resp.StatusCode = 429 then
       begin

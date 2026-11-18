@@ -295,6 +295,15 @@ begin
   end;
 end;
 
+// Numero JSON: enteros sin ".0" (5240986 y no 5240986.0)
+function JNumber(const D: Double): TJSONNumber;
+begin
+  if (Frac(D) = 0) and (Abs(D) < 1e15) then
+    Result := TJSONNumber.Create(Trunc(D))
+  else
+    Result := TJSONNumber.Create(D);
+end;
+
 procedure CopyNum(Src, Dst: TJSONObject; const SrcName, DstName: string; ADiv: Double = 1);
 var
   D: Double;
@@ -302,9 +311,9 @@ begin
   if JNum(Src, SrcName, D) then
   begin
     if ADiv <> 1 then
-      Dst.AddPair(DstName, TJSONNumber.Create(RoundTo(D / ADiv, -2)))
+      Dst.AddPair(DstName, JNumber(RoundTo(D / ADiv, -2)))
     else
-      Dst.AddPair(DstName, TJSONNumber.Create(D));
+      Dst.AddPair(DstName, JNumber(D));
   end;
 end;
 
@@ -630,10 +639,10 @@ begin
         else
           Result.AddPair('use', Use);
         if JNum(Root, 'result_count', D) then
-          Result.AddPair('total', TJSONNumber.Create(D));
+          Result.AddPair('total', JNumber(D));
         Result.AddPair('page', TJSONNumber.Create(Page));
         if JNum(Root, 'page_count', D) then
-          Result.AddPair('pages', TJSONNumber.Create(D));
+          Result.AddPair('pages', JNumber(D));
         Result.AddPair('count', TJSONNumber.Create(Res.Count));
         Result.AddPair('results', Res);
         if Dropped > 0 then
@@ -800,11 +809,11 @@ end;
 
 procedure PickOriginal(Src: TJSONObject; var AUrl, AType: string; var ASize: Double);
 const
-  PREF: array[0..1] of string = ('wav', 'flac');
+  PREFERRED: array[0..1] of string = ('wav', 'flac');
 var
   V: TJSONValue;
   A: TJSONArray;
-  Pref: string;
+  Ext: string;
   I: Integer;
   It: TJSONObject;
   D: Double;
@@ -812,15 +821,18 @@ begin
   V := Src.GetValue('alt_files');
   if not (V is TJSONArray) then Exit;
   A := TJSONArray(V);
-  for Pref in PREF do
+  for Ext in PREFERRED do
     for I := 0 to A.Count - 1 do
       if A.Items[I] is TJSONObject then
       begin
         It := TJSONObject(A.Items[I]);
-        if (LowerCase(JStr(It, 'filetype')) = Pref) and (JStr(It, 'url') <> '') then
+        // Las URL de la API de Freesound (/apiv2/.../download/) exigen OAuth
+        // propio de Freesound: sin eso dan 401. Se usa la vista previa.
+        if (LowerCase(JStr(It, 'filetype')) = Ext) and (JStr(It, 'url') <> '') and
+           (Pos('/apiv2/', LowerCase(JStr(It, 'url'))) = 0) then
         begin
           AUrl  := JStr(It, 'url');
-          AType := Pref;
+          AType := Ext;
           if JNum(It, 'filesize', D) then ASize := D else ASize := 0;
           Exit;
         end;
@@ -1047,7 +1059,7 @@ begin
         Result.AddPair('manifest', ManPath);
         Result.AddPair('downloaded', Done);
         Result.AddPair('skipped', Skipped);
-        Result.AddPair('total_bytes', TJSONNumber.Create(Total));
+        Result.AddPair('total_bytes', JNumber(Total));
         Result.AddPair('note', NOTE_VERIFY +
           ' Set licence_checked_on_page=true in the manifest once checked.');
         Done := nil;
@@ -1279,16 +1291,19 @@ begin
             PdHead := 'Public domain / CC0 (no attribution required):';
           end;
 
-          if Fmt = 'html' then SB.Append('<p>' + HtmlEsc(Head) + '</p>' + sLineBreak + '<ul>' + sLineBreak)
-          else if Fmt = 'markdown' then SB.Append('**' + Head + '**' + sLineBreak + sLineBreak)
-          else SB.Append(Head + sLineBreak);
-          for C in Attr do
-            SB.Append(CreditLine(C, Fmt, Lang) + sLineBreak);
-          if Fmt = 'html' then SB.Append('</ul>' + sLineBreak);
+          if Attr.Count > 0 then
+          begin
+            if Fmt = 'html' then SB.Append('<p>' + HtmlEsc(Head) + '</p>' + sLineBreak + '<ul>' + sLineBreak)
+            else if Fmt = 'markdown' then SB.Append('**' + Head + '**' + sLineBreak + sLineBreak)
+            else SB.Append(Head + sLineBreak);
+            for C in Attr do
+              SB.Append(CreditLine(C, Fmt, Lang) + sLineBreak);
+            if Fmt = 'html' then SB.Append('</ul>' + sLineBreak);
+          end;
 
           if P.IncludeCc0 and (Pd.Count > 0) then
           begin
-            SB.Append(sLineBreak);
+            if Attr.Count > 0 then SB.Append(sLineBreak);
             if Fmt = 'html' then SB.Append('<p>' + HtmlEsc(PdHead) + '</p>' + sLineBreak + '<ul>' + sLineBreak)
             else if Fmt = 'markdown' then SB.Append('**' + PdHead + '**' + sLineBreak + sLineBreak)
             else SB.Append(PdHead + sLineBreak);
@@ -1392,7 +1407,7 @@ begin
                 Result := CompareValue(DB, DA);
               end));
             O := TJSONObject.Create;
-            O.AddPair('total_items', TJSONNumber.Create(Total));
+            O.AddPair('total_items', JNumber(Total));
             O.AddPair('source_count', TJSONNumber.Create(List.Count));
             OutArr := TJSONArray.Create;
             for I := 0 to Min(List.Count, 15) - 1 do
